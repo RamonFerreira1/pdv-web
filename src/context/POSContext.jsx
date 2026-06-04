@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect } from 'react';
 
 export const POSContext = createContext();
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`;
 
 const initialSellers = [
   { id: 1, name: "Robertinho", salesTotal: 1500 },

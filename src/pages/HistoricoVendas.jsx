@@ -12,7 +12,7 @@ export default function HistoricoVendas() {
   useEffect(() => {
     const fetchVendas = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/vendas');
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/vendas`);
         if (response.ok) {
           const data = await response.json();
           setVendas(data);

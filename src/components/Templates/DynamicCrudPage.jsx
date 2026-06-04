@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Edit2, Trash2 } from 'lucide-react';
 
-const API_URL = 'http://localhost:3001/api/dynamic';
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/dynamic`;
 
 export default function DynamicCrudPage({ title, endpoint, fields }) {
   const [data, setData] = useState([]);
