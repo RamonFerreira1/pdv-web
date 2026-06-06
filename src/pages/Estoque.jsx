@@ -53,15 +53,15 @@ export default function Estoque() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-darkBg p-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="flex flex-col h-full bg-darkBg p-4 sm:p-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Gestão de Estoque</h1>
-          <p className="text-slate-400">Gerencie seus produtos, preços e quantidades.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">Gestão de Estoque</h1>
+          <p className="text-slate-400 text-sm">Gerencie seus produtos, preços e quantidades.</p>
         </div>
         <button 
           onClick={handleAdd}
-          className="bg-primaryGreen hover:bg-primaryHover text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors shadow-lg shadow-primaryGreen/20"
+          className="bg-primaryGreen hover:bg-primaryHover text-white px-5 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors shadow-lg shadow-primaryGreen/20 self-start sm:self-auto whitespace-nowrap"
         >
           <Plus size={20} />
           <span>Adicionar Produto</span>
@@ -70,24 +70,24 @@ export default function Estoque() {
 
       <div className="bg-darkCard border border-darkBorder rounded-2xl flex-1 flex flex-col overflow-hidden">
         {/* Toolbar */}
-        <div className="p-4 border-b border-darkBorder flex items-center justify-between bg-slate-900/50">
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+        <div className="p-4 border-b border-darkBorder flex flex-col sm:flex-row sm:items-center gap-3 bg-slate-900/50">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
               type="text"
               placeholder="Pesquisar produto por nome..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-darkBg border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-slate-200 focus:outline-none focus:border-primaryGreen transition-colors"
+              className="w-full bg-darkBg border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-slate-200 focus:outline-none focus:border-primaryGreen transition-colors text-sm"
             />
           </div>
-          <div className="text-slate-400 text-sm">
-            Total de {filtered.length} produtos
+          <div className="text-slate-400 text-sm shrink-0">
+            Total: {filtered.length} produto{filtered.length !== 1 ? 's' : ''}
           </div>
         </div>
 
-        {/* Table */}
-        <div className="flex-1 overflow-auto">
+        {/* Desktop Table */}
+        <div className="flex-1 overflow-auto hidden sm:block">
           <table className="w-full text-left border-collapse">
             <thead className="bg-darkBorder/50 text-slate-400 text-sm uppercase tracking-wider sticky top-0 backdrop-blur-md">
               <tr>
@@ -153,6 +153,44 @@ export default function Estoque() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="sm:hidden flex-1 overflow-y-auto p-3 space-y-2">
+          {filtered.length === 0 && (
+            <div className="text-center text-slate-500 py-10">Nenhum produto encontrado.</div>
+          )}
+          {filtered.map(p => (
+            <div key={p.id} className="bg-darkBg border border-darkBorder rounded-xl p-4 flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-darkCard border border-darkBorder flex items-center justify-center text-xl shrink-0">
+                {p.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-medium text-sm truncate">{p.name}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-primaryGreen font-bold text-sm">{fmt(p.price)}</span>
+                  <span className="text-slate-500 text-xs">·</span>
+                  <span className={`text-xs font-medium ${p.stock <= 5 ? 'text-red-400' : 'text-slate-400'}`}>
+                    {p.stock === 999 ? 'Ilimitado' : `${p.stock} un`}
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-1 shrink-0">
+                <button
+                  onClick={() => handleEdit(p)}
+                  className="p-2 bg-darkCard text-slate-400 hover:text-white rounded-lg transition-colors"
+                >
+                  <Edit2 size={15} />
+                </button>
+                <button
+                  onClick={() => handleDeleteReq(p)}
+                  className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

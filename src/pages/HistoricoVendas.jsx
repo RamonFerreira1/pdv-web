@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Search, Clock, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Users, Smartphone } from 'lucide-react';
 
 const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -8,6 +8,7 @@ export default function HistoricoVendas() {
   const navigate = useNavigate();
   const [vendas, setVendas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     const fetchVendas = async () => {
@@ -18,7 +19,7 @@ export default function HistoricoVendas() {
           setVendas(data);
         }
       } catch (error) {
-        console.error("Erro ao buscar histórico:", error);
+        console.error('Erro ao buscar histórico:', error);
       } finally {
         setLoading(false);
       }
@@ -26,68 +27,80 @@ export default function HistoricoVendas() {
     fetchVendas();
   }, []);
 
+  const filtered = vendas.filter(v =>
+    String(v.ID).includes(search) || String(v.total).includes(search)
+  );
+
   return (
-    <div className="flex flex-col h-full bg-slate-100 text-slate-800">
-      {/* App Bar */}
-      <div className="h-16 bg-[#3f51b5] flex items-center justify-between px-4 shadow-md shrink-0 text-white">
-        <div className="flex items-center">
-          <button onClick={() => navigate(-1)} className="p-2 mr-2 hover:bg-indigo-600 rounded-full transition-colors">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    <div className="flex flex-col h-full bg-darkBg">
+      {/* Header */}
+      <div className="bg-darkCard border-b border-darkBorder px-4 sm:px-6 py-4 shrink-0">
+        <div className="flex items-center gap-3 mb-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 text-slate-400 hover:text-white hover:bg-darkBorder rounded-lg transition-colors"
+          >
+            <ArrowLeft size={20} />
           </button>
-          <h1 className="text-xl font-medium">Histórico de vendas</h1>
+          <div>
+            <h1 className="text-xl font-bold text-white">Histórico de Vendas</h1>
+            <p className="text-xs text-slate-400">{vendas.length} venda{vendas.length !== 1 ? 's' : ''} registrada{vendas.length !== 1 ? 's' : ''}</p>
+          </div>
         </div>
-        <button className="p-2 hover:bg-indigo-600 rounded-full">
-          <Filter size={20} />
-        </button>
+
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input
+            type="text"
+            placeholder="Buscar por nº da venda..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-darkBg border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-primaryGreen transition-colors text-sm"
+          />
+        </div>
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
         {loading ? (
-          <div className="flex justify-center items-center h-40 text-slate-500">Carregando...</div>
-        ) : vendas.length === 0 ? (
-          <div className="flex flex-col justify-center items-center h-40 text-slate-500">
-            <Search size={32} className="mb-2 opacity-50" />
+          <div className="flex items-center justify-center h-40">
+            <div className="w-8 h-8 border-2 border-primaryGreen border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-40 text-slate-500 gap-2">
+            <ShoppingBag size={40} className="opacity-30" />
             <p>Nenhuma venda encontrada.</p>
           </div>
         ) : (
-          <div className="bg-white divide-y divide-slate-200">
-            {vendas.map((venda) => {
+          <div className="max-w-2xl mx-auto space-y-3">
+            {filtered.map((venda) => {
               const date = new Date(venda.data_venda);
               const time = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-              const fullDate = date.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+              const fullDate = date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
 
               return (
-                <div key={venda.ID} className="p-4 hover:bg-slate-50">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-normal text-slate-800">VENDA {venda.ID}</h3>
-                    <div className="flex items-center text-slate-500 text-sm gap-1">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                      {time}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center text-slate-500 text-sm mb-4 gap-1">
-                    <Smartphone size={14} />
-                    <span>0938d388cde375b5</span> {/* Mock device ID like in video */}
-                  </div>
-
-                  <div className="flex justify-between items-end">
-                    <div className="text-slate-500">
-                      <p>Produto</p>
-                      {venda.usuario_id && (
-                        <div className="flex items-center gap-1 mt-1 text-slate-600">
-                          <Users size={14} />
-                          <span>Alexandre padaria</span> {/* Mock client name */}
+                <div
+                  key={venda.ID}
+                  className="bg-darkCard border border-darkBorder rounded-xl p-4 hover:border-primaryGreen/30 transition-colors"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-primaryGreen/10 flex items-center justify-center shrink-0">
+                        <ShoppingBag size={18} className="text-primaryGreen" />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold">Venda #{venda.ID}</h3>
+                        <div className="flex items-center gap-1 text-slate-400 text-xs mt-0.5">
+                          <Clock size={12} />
+                          <span>{fullDate} às {time}</span>
                         </div>
-                      )}
+                      </div>
                     </div>
-                    <span className="text-[#10b981] font-medium text-xl">
+                    <span className="text-primaryGreen font-bold text-lg shrink-0 ml-4">
                       {fmt(parseFloat(venda.total))}
                     </span>
                   </div>
-                  
-                  {/* Mocking the date separator just for visual fidelity if we wanted, but we'll show it inside the card for simplicity or assume it groups by date. */}
                 </div>
               );
             })}
