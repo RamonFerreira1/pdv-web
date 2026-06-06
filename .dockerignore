@@ -1,0 +1,18 @@
+# Ignorar node_modules para não enviar ao Docker (muito pesado)
+node_modules/
+server/node_modules/
+
+# Ignorar build anterior
+dist/
+
+# Ignorar arquivos de desenvolvimento
+.git/
+.gitignore
+*.md
+.env
+.env.*
+!.env.example
+
+# Scripts temporários
+scripts/
+server/export-aiven.cjs

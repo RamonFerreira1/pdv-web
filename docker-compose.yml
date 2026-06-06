@@ -1,0 +1,80 @@
+services:
+
+  # ================================
+  # 🗄️  Banco de Dados MySQL 8
+  # ================================
+  database:
+    image: mysql:8
+    container_name: pdv-database
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: pdv_root_2024
+      MYSQL_DATABASE: pdv
+      MYSQL_USER: pdv_user
+      MYSQL_PASSWORD: pdv_pass_2024
+    ports:
+      - "3306:3306"
+    volumes:
+      # Persistência dos dados (não perde ao reiniciar)
+      - mysql_data:/var/lib/mysql
+      # Scripts SQL executados na primeira inicialização
+      - ./docker/mysql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppdv_root_2024"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - pdv-network
+
+  # ================================
+  # ⚙️  Backend Node.js
+  # ================================
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: pdv-backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: database
+      DB_USER: pdv_user
+      DB_PASSWORD: pdv_pass_2024
+      DB_NAME: pdv
+      DB_PORT: 3306
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - pdv-network
+
+  # ================================
+  # 🌐 Frontend React + Nginx
+  # ================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pdv-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - pdv-network
+
+# ================================
+# Volumes e Redes
+# ================================
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  pdv-network:
+    driver: bridge

@@ -1,0 +1,57 @@
+# =============================================
+# render.yaml — Deploy no Render.com
+# =============================================
+# Este arquivo configura os serviços do Render automaticamente.
+# IMPORTANTE: As variáveis de ambiente com valor "CONFIGURAR_NO_RENDER"
+# devem ser definidas manualmente no painel do Render após o deploy.
+# =============================================
+
+services:
+
+  # ================================
+  # ⚙️  Backend Node.js
+  # ================================
+  - type: web
+    name: pdv-backend
+    runtime: docker
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: ./server
+    plan: free
+    envVars:
+      # Banco de dados: usa Aiven (gratuito) para o ambiente online
+      # Configure esses valores no painel do Render → Environment
+      - key: DB_HOST
+        value: mysql-3df3d8c6-ramonferreirams11-45cd.l.aivencloud.com
+      - key: DB_USER
+        value: avnadmin
+      - key: DB_PASSWORD
+        sync: false  # Definir manualmente no Render (segredo)
+      - key: DB_NAME
+        value: pvd
+      - key: DB_PORT
+        value: "28312"
+      - key: DB_SSL
+        value: "true"
+      - key: PORT
+        value: "3001"
+
+  # ================================
+  # 🌐 Frontend React (Site Estático)
+  # ================================
+  - type: web
+    name: pdv-frontend
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    plan: free
+    envVars:
+      # IMPORTANTE: Após o deploy do backend, copie a URL dele (ex: https://pdv-backend.onrender.com)
+      # e configure aqui no painel do Render → pdv-frontend → Environment → VITE_API_URL
+      # Depois clique em "Manual Deploy" no frontend para rebuildar com a URL correta.
+      - key: VITE_API_URL
+        sync: false  # Definir manualmente: https://pdv-backend.onrender.com
+    routes:
+      # SPA routing: todas as rotas vão para index.html
+      - type: rewrite
+        source: /*
+        destination: /index.html
