@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Plus, Edit2, Trash2, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react';
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/dynamic`;
 
 export default function DynamicCrudPage({ title, endpoint, fields }) {
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -81,7 +83,16 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
     <div className="flex flex-col h-full bg-darkBg">
       {/* Topbar */}
       <div className="border-b border-darkBorder px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 shrink-0 bg-darkCard/50">
-        <h1 className="text-xl sm:text-2xl font-bold text-white flex-1">{title}</h1>
+        <div className="flex items-center gap-3 flex-1">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 text-slate-400 hover:text-white hover:bg-darkBorder rounded-lg transition-colors shrink-0"
+            aria-label="Voltar"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">{title}</h1>
+        </div>
 
         <div className="flex items-center gap-3">
           <div className="relative flex-1 sm:flex-none">

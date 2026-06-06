@@ -1,5 +1,6 @@
 import React, { useContext, useState, useMemo } from 'react';
-import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Search, Edit2, Trash2, ArrowLeft } from 'lucide-react';
 import { POSContext } from '../context/POSContext';
 import ProductModal from '../components/Estoque/ProductModal';
 import DeleteConfirmModal from '../components/Estoque/DeleteConfirmModal';
@@ -52,12 +53,23 @@ export default function Estoque() {
     setIsDeleteModalOpen(false);
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col h-full bg-darkBg p-4 sm:p-8">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">Gestão de Estoque</h1>
-          <p className="text-slate-400 text-sm">Gerencie seus produtos, preços e quantidades.</p>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 text-slate-400 hover:text-white hover:bg-darkBorder rounded-lg transition-colors"
+            aria-label="Voltar"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">Gestão de Estoque</h1>
+            <p className="text-slate-400 text-sm">Gerencie seus produtos, preços e quantidades.</p>
+          </div>
         </div>
         <button 
           onClick={handleAdd}

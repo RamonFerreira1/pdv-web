@@ -1,10 +1,12 @@
 import React, { useContext, useState } from 'react';
-import { Calendar, DollarSign, TrendingUp, XCircle, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, DollarSign, TrendingUp, XCircle, Users, ArrowLeft } from 'lucide-react';
 import { POSContext } from '../context/POSContext';
 
 const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 export default function Relatorios() {
+  const navigate = useNavigate();
   const { sales, sellers, cancellations } = useContext(POSContext);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
@@ -17,11 +19,20 @@ export default function Relatorios() {
   const sortedSellers = [...sellers].sort((a, b) => b.salesTotal - a.salesTotal);
 
   return (
-    <div className="flex flex-col h-full bg-darkBg p-8 overflow-y-auto">
-      <div className="flex justify-between items-end mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Dashboard Gerencial</h1>
-          <p className="text-slate-400">Resumo financeiro e desempenho da equipe.</p>
+    <div className="flex flex-col h-full bg-darkBg p-4 sm:p-8 overflow-y-auto">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-8">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 text-slate-400 hover:text-white hover:bg-darkBorder rounded-lg transition-colors shrink-0"
+            aria-label="Voltar"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">Dashboard Gerencial</h1>
+            <p className="text-slate-400 text-sm">Resumo financeiro e desempenho da equipe.</p>
+          </div>
         </div>
         
         {/* Date Filter */}
