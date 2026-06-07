@@ -23,6 +23,10 @@ app.use('/api/reports', reportRoutes);
 // Rotas de Controle de Caixa
 app.use('/api/caixa', caixaRoutes);
 
+// Rotas de Fiado
+const fiadoRoutes = require('./routes/fiado');
+app.use('/api/fiado', fiadoRoutes);
+
 // Rota de Health Check para monitores de uptime (ex: UptimeRobot)
 app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok', timestamp: new Date() }));
 
@@ -118,6 +122,14 @@ app.post('/api/vendas', authenticateToken, async (req, res) => {
       await db.query(
         'UPDATE item SET estoque = GREATEST(0, estoque - ?) WHERE ID = ?',
         [item.qty, item.id]
+      );
+    }
+
+    // Se o método for fiado e houver cliente_id, registrar na tabela fiado
+    if (req.body.metodo_pagamento === 'fiado' && req.body.cliente_id) {
+      await db.query(
+        'INSERT INTO fiado (cliente_id, valor_devido) VALUES (?, ?)',
+        [req.body.cliente_id, total]
       );
     }
 

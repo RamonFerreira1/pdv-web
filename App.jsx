@@ -13,6 +13,7 @@ import HistoricoVendas from './src/pages/HistoricoVendas';
 import EmConstrucao from './src/pages/EmConstrucao';
 import Dashboard from './src/pages/Dashboard';
 import UsuariosPage from './src/pages/Gestao/UsuariosPage';
+import Fiados from './src/pages/Gestao/Fiados';
 
 import DynamicCrudPage from './src/components/Templates/DynamicCrudPage';
 import GenericReport from './src/components/Templates/GenericReport';
@@ -132,6 +133,7 @@ export default function App() {
             {/* Novas Rotas de Relatórios Reais */}
             <Route path="relatorios/produtos" element={<VendasPorProduto />} />
             <Route path="relatorios/comissoes" element={<Comissoes />} />
+            <Route path="fiados" element={<Fiados />} />
 
             {/* Telas ainda em Construção */}
             <Route path="relatorios/servicos" element={<GenericReport title="Vendas por Serviço" />} />

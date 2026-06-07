@@ -5,6 +5,7 @@ import { POSContext } from '../context/POSContext';
 import { AuthContext } from '../context/AuthContext';
 import PaymentModal from '../components/PDV/PaymentModal';
 import ClienteSearch from '../components/PDV/ClienteSearch';
+import BarcodeScanner from '../components/PDV/BarcodeScanner';
 
 const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -76,8 +77,9 @@ export default function PDV() {
   const [desconto, setDesconto] = useState('');
   const [clienteSelecionado, setClienteSelecionado] = useState(null);
   
-  const [isCaixaAberto, setIsCaixaAberto] = useState(true);
+  const [isCaixaAberto, setIsCaixaAberto] = useState(false);
   const [caixaLoading, setCaixaLoading] = useState(true);
+  const [showScanner, setShowScanner] = useState(false);
   const navigate = useNavigate();
 
   const handleClearCart = () => {
@@ -142,6 +144,16 @@ export default function PDV() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [products, addToCart]);
 
+  const handleCameraScan = (decodedText) => {
+    const scannedProduct = products.find(p => p.codigo_barras === decodedText);
+    if (scannedProduct) {
+      addToCart(scannedProduct);
+      setShowScanner(false);
+    } else {
+      // Opcional: mostrar erro se não achar
+    }
+  };
+
   const categories = ['Todos', ...new Set(products.map((p) => p.category))];
 
   const filtered = useMemo(() =>
@@ -194,7 +206,10 @@ export default function PDV() {
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-darkBg border border-darkBorder rounded-xl pl-9 pr-10 py-2.5 text-slate-200 focus:outline-none focus:border-primaryGreen transition-colors text-sm"
             />
-            <button className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primaryGreen transition-colors">
+            <button 
+              onClick={() => setShowScanner(true)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primaryGreen transition-colors"
+            >
               <ScanLine size={18} />
             </button>
           </div>
@@ -399,6 +414,13 @@ export default function PDV() {
         desconto={parseFloat(desconto) || 0}
         clienteId={clienteSelecionado?.id || null}
       />
+      
+      {showScanner && (
+        <BarcodeScanner 
+          onScan={handleCameraScan} 
+          onClose={() => setShowScanner(false)} 
+        />
+      )}
     </div>
   );
 }

@@ -8,6 +8,7 @@ const METODOS = [
   { id: 'pix', label: 'Pix', icon: '⚡' },
   { id: 'credito', label: 'Cartão de Crédito', icon: '💳' },
   { id: 'debito', label: 'Débito', icon: '🏧' },
+  { id: 'fiado', label: 'Fiado', icon: '📓' },
 ];
 
 const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -62,7 +63,9 @@ export default function PaymentModal({ isOpen, onClose, desconto = 0, clienteId 
 
   const valorNum = parseFloat(valorRecebido) || 0;
   const troco = valorNum - totalComDesconto;
-  const podeFinalizar = metodo !== null && (metodo !== 'dinheiro' || valorNum >= totalComDesconto);
+  const podeFinalizar = metodo !== null && 
+    (metodo !== 'dinheiro' || valorNum >= totalComDesconto) &&
+    (metodo !== 'fiado' || clienteId !== null);
 
   const [finalizando, setFinalizando] = useState(false);
 
@@ -83,12 +86,34 @@ export default function PaymentModal({ isOpen, onClose, desconto = 0, clienteId 
 
   const saleDetails = sucesso ? {
     items: cartItems,
-    total: totalPrice,
+    subtotal: totalPrice,
+    desconto: desconto || 0,
+    total: totalComDesconto,
     troco: Math.max(troco, 0),
     metodo: METODOS.find((m) => m.id === metodo)?.label,
     numeroVenda: numeroVenda,
     data: new Date().toISOString()
   } : null;
+
+  const handleWhatsApp = () => {
+    let text = `*SMART PDV - RECIBO DE VENDA*\n`;
+    text += `Cupom: #${String(numeroVenda).padStart(6, '0')}\n`;
+    text += `Data: ${new Date().toLocaleString('pt-BR')}\n\n`;
+    text += `*ITENS:*\n`;
+    cartItems.forEach(item => {
+      text += `${item.qty}x ${item.name} - ${fmt(item.price * item.qty)}\n`;
+    });
+    text += `\n`;
+    if (desconto > 0) {
+      text += `Subtotal: ${fmt(totalPrice)}\n`;
+      text += `Desconto: -${fmt(desconto)}\n`;
+    }
+    text += `*TOTAL: ${fmt(totalComDesconto)}*\n`;
+    text += `Pagamento: ${METODOS.find((m) => m.id === metodo)?.label}\n\n`;
+    text += `Obrigado pela preferência!`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
 
   if (sucesso) {
     return (
@@ -121,13 +146,12 @@ export default function PaymentModal({ isOpen, onClose, desconto = 0, clienteId 
               <Printer size={20} />
               <span className="text-xs">Imprimir</span>
             </button>
-            <button className="flex-1 flex flex-col items-center justify-center gap-2 bg-darkBorder hover:bg-slate-700 text-slate-300 py-3 rounded-xl transition-colors">
-              <Mail size={20} />
-              <span className="text-xs">E-mail</span>
-            </button>
-            <button className="flex-1 flex flex-col items-center justify-center gap-2 bg-darkBorder hover:bg-slate-700 text-slate-300 py-3 rounded-xl transition-colors">
+            <button 
+              onClick={handleWhatsApp}
+              className="flex-1 flex flex-col items-center justify-center gap-2 bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] py-3 rounded-xl transition-colors border border-[#25D366]/30"
+            >
               <Share2 size={20} />
-              <span className="text-xs">Compartilhar</span>
+              <span className="text-xs">WhatsApp</span>
             </button>
           </div>
 

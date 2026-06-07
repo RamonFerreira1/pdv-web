@@ -5,7 +5,7 @@ const fmt = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', curren
 export default function Receipt({ saleDetails }) {
   if (!saleDetails) return null;
 
-  const { items, total, troco, metodo, numeroVenda, data, atendente } = saleDetails;
+  const { items, subtotal, desconto, total, troco, metodo, numeroVenda, data, atendente } = saleDetails;
 
   return (
     <div className="receipt-print-container bg-white text-black p-4 text-[12px] font-mono leading-tight w-[80mm] mx-auto">
@@ -53,6 +53,18 @@ export default function Receipt({ saleDetails }) {
 
       {/* Totais */}
       <div className="space-y-1 mb-4 border-b border-black pb-2 border-dashed">
+        {desconto > 0 && (
+          <>
+            <div className="flex justify-between text-[12px]">
+              <span>SUBTOTAL</span>
+              <span>{fmt(subtotal)}</span>
+            </div>
+            <div className="flex justify-between text-[12px]">
+              <span>DESCONTO</span>
+              <span>-{fmt(desconto)}</span>
+            </div>
+          </>
+        )}
         <div className="flex justify-between font-bold text-[14px]">
           <span>TOTAL</span>
           <span>{fmt(total)}</span>

@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { 
   Store, Edit3, ClipboardList, Tag, Undo2, Box, 
-  BarChart2, PieChart, Calculator, Users, DollarSign, MessageCircle, X, LogOut, LayoutDashboard, UserCog
+  BarChart2, PieChart, Calculator, Users, DollarSign, MessageCircle, X, LogOut, LayoutDashboard, UserCog, BookOpen
 } from 'lucide-react';
 
 export default function Sidebar({ onClose }) {
@@ -29,7 +29,7 @@ export default function Sidebar({ onClose }) {
         { name: 'Relatórios', path: '/relatorios-menu', icon: BarChart2 },
         { name: 'Relatórios consolidados', path: '/relatorios-consolidados', icon: PieChart },
         { name: 'Controle de caixa', path: '/caixa', icon: Calculator },
-        { name: 'Fiado', path: '/fiado', icon: Users },
+        { name: 'Contas a Receber (Fiados)', path: '/fiados', icon: BookOpen },
         { name: 'Financeiro', path: '/financeiro', icon: DollarSign },
         ...(user?.role === 'Admin' ? [{ name: 'Usuários', path: '/usuarios', icon: UserCog }] : []),
       ]

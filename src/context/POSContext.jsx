@@ -96,6 +96,7 @@ export const POSProvider = ({ children }) => {
           total: totalComDesconto,
           desconto: desconto || 0,
           cliente_id: clienteId || null,
+          metodo_pagamento: method,
           items: cartItems.map(item => ({ id: item.id, qty: item.qty, price: item.price }))
         })
       });

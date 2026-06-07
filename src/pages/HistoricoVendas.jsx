@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Search, Clock, ShoppingBag, ArrowLeft, ChevronDown, ChevronUp, Package, X } from 'lucide-react';
+import { Search, Clock, ShoppingBag, ArrowLeft, ChevronDown, ChevronUp, Package, X, Download, Printer } from 'lucide-react';
+import { exportToCSV } from '../utils/exportUtils';
 import { useNavigate } from 'react-router-dom';
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`;
@@ -131,6 +132,20 @@ export default function HistoricoVendas() {
           <div>
             <h1 className="text-xl font-bold text-white">Histórico de Vendas</h1>
             <p className="text-xs text-slate-400">{vendas.length} venda{vendas.length !== 1 ? 's' : ''} registrada{vendas.length !== 1 ? 's' : ''} — clique para ver detalhes</p>
+          </div>
+          <div className="ml-auto flex gap-2">
+            <button
+              onClick={() => exportToCSV(vendas, 'historico_vendas')}
+              className="flex items-center gap-1 bg-darkBg border border-darkBorder hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-sm transition-colors"
+            >
+              <Download size={14} /> <span className="hidden sm:inline">Exportar CSV</span>
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-1 bg-darkBg border border-darkBorder hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-sm transition-colors"
+            >
+              <Printer size={14} /> <span className="hidden sm:inline">Imprimir</span>
+            </button>
           </div>
         </div>
 
