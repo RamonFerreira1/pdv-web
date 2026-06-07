@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { Search, ScanLine, ShoppingCart, Trash2, Plus, Minus, Package, X, ChevronUp, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { POSContext } from '../context/POSContext';
-import { AuthContext } from '../context/AuthContext';
-import PaymentModal from '../components/PDV/PaymentModal';
-import ClienteSearch from '../components/PDV/ClienteSearch';
-import BarcodeScanner from '../components/PDV/BarcodeScanner';
+import { PDVContext } from '../context/PDVContext';
+import { AutenticacaoContext } from '../context/AutenticacaoContext';
+import ModalPagamento from '../components/PDV/ModalPagamento';
+import BuscaCliente from '../components/PDV/BuscaCliente';
+import LeitorCodigoBarras from '../components/PDV/LeitorCodigoBarras';
 
 const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -68,8 +68,8 @@ function CartItem({ item, onInc, onDec, onRemove }) {
 }
 
 export default function PDV() {
-  const { products, cartItems, totalQty, totalPrice, addToCart, incQty, decQty, removeItem, clearCart } = useContext(POSContext);
-  const { user } = useContext(AuthContext);
+  const { produtos, carrinhoItens, totalQty, precoTotal, adicionarAoCarrinho, incQty, decQty, removeItem, limparCarrinho } = useContext(PDVContext);
+  const { usuario } = useContext(AutenticacaoContext);
   const [search, setSearch] = useState('');
   const [activecat, setActivecat] = useState('Todos');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -83,7 +83,7 @@ export default function PDV() {
   const navigate = useNavigate();
 
   const handleClearCart = () => {
-    clearCart();
+    limparCarrinho();
     setDesconto('');
     setClienteSelecionado(null);
   };
@@ -129,9 +129,9 @@ export default function PDV() {
       if (e.key === 'Enter' && barcodeBuffer.length > 0) {
         e.preventDefault();
         // Buscar produto pelo codigo de barras
-        const scannedProduct = products.find(p => p.codigo_barras === barcodeBuffer);
+        const scannedProduct = produtos.find(p => p.codigo_barras === barcodeBuffer);
         if (scannedProduct) {
-          addToCart(scannedProduct);
+          adicionarAoCarrinho(scannedProduct);
           // Opcional: Feedback visual ou sonoro aqui
         }
         barcodeBuffer = '';
@@ -142,26 +142,26 @@ export default function PDV() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [products, addToCart]);
+  }, [produtos, adicionarAoCarrinho]);
 
   const handleCameraScan = (decodedText) => {
-    const scannedProduct = products.find(p => p.codigo_barras === decodedText);
+    const scannedProduct = produtos.find(p => p.codigo_barras === decodedText);
     if (scannedProduct) {
-      addToCart(scannedProduct);
+      adicionarAoCarrinho(scannedProduct);
       setShowScanner(false);
     } else {
       // Opcional: mostrar erro se não achar
     }
   };
 
-  const categories = ['Todos', ...new Set(products.map((p) => p.category))];
+  const categories = ['Todos', ...new Set(produtos.map((p) => p.category))];
 
   const filtered = useMemo(() =>
-    products.filter((p) =>
+    produtos.filter((p) =>
       (activecat === 'Todos' || p.category === activecat) &&
       p.name.toLowerCase().includes(search.toLowerCase())
     ),
-    [products, search, activecat]
+    [produtos, search, activecat]
   );
 
   if (caixaLoading) return <div className="p-10 text-primaryGreen h-full flex items-center justify-center">Verificando Caixa...</div>;
@@ -194,7 +194,7 @@ export default function PDV() {
         <div className="h-16 sm:h-20 border-b border-darkBorder px-4 sm:px-6 flex items-center gap-3 bg-darkCard/50 shrink-0">
           <div className="flex items-center gap-2 bg-darkCard border border-darkBorder px-3 py-2 rounded-lg shrink-0">
             <div className="w-2 h-2 rounded-full bg-primaryGreen" />
-            <span className="text-xs sm:text-sm font-medium text-slate-200 whitespace-nowrap">{user?.nome || 'Operador'}</span>
+            <span className="text-xs sm:text-sm font-medium text-slate-200 whitespace-nowrap">{usuario?.nome || 'Operador'}</span>
           </div>
 
           <div className="flex-1 relative">
@@ -237,7 +237,7 @@ export default function PDV() {
           {filtered.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
               {filtered.map((p) => (
-                <ItemCard key={p.id} product={p} onAdd={addToCart} />
+                <ItemCard key={p.id} product={p} onAdd={adicionarAoCarrinho} />
               ))}
             </div>
           ) : (
@@ -270,14 +270,14 @@ export default function PDV() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {cartItems.length === 0 ? (
+          {carrinhoItens.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-slate-500">
               <ShoppingCart size={48} className="mb-4 opacity-20" />
               <p>Carrinho vazio</p>
               <p className="text-sm">Adicione produtos para iniciar a venda.</p>
             </div>
           ) : (
-            cartItems.map((item) => (
+            carrinhoItens.map((item) => (
               <CartItem key={item.id} item={item} onInc={incQty} onDec={decQty} onRemove={removeItem} />
             ))
           )}
@@ -285,11 +285,11 @@ export default function PDV() {
 
         <div className="p-5 border-t border-darkBorder bg-darkCard shrink-0">
           {/* Cliente */}
-          <ClienteSearch clienteSelecionado={clienteSelecionado} onSelect={setClienteSelecionado} />
+          <BuscaCliente clienteSelecionado={clienteSelecionado} onSelect={setClienteSelecionado} />
           
           <div className="flex justify-between items-center mb-1 text-slate-400 text-sm">
             <span>Subtotal</span>
-            <span>{fmt(totalPrice)}</span>
+            <span>{fmt(precoTotal)}</span>
           </div>
           
           {/* Desconto */}
@@ -298,7 +298,7 @@ export default function PDV() {
             <input
               type="number"
               min="0"
-              max={totalPrice}
+              max={precoTotal}
               step="0.01"
               value={desconto}
               onChange={e => setDesconto(e.target.value)}
@@ -309,19 +309,19 @@ export default function PDV() {
 
           <div className="flex justify-between items-center mb-5 text-white text-xl font-bold">
             <span>Total</span>
-            <span className="text-primaryGreen">{fmt(Math.max(0, totalPrice - (parseFloat(desconto) || 0)))}</span>
+            <span className="text-primaryGreen">{fmt(Math.max(0, precoTotal - (parseFloat(desconto) || 0)))}</span>
           </div>
 
           <button
             className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
-              cartItems.length > 0
+              carrinhoItens.length > 0
                 ? 'bg-primaryGreen hover:bg-primaryHover text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
                 : 'bg-darkBorder text-slate-500 cursor-not-allowed'
             }`}
             onClick={() => setIsPaymentModalOpen(true)}
-            disabled={cartItems.length === 0}
+            disabled={carrinhoItens.length === 0}
           >
-            {cartItems.length === 0 ? 'COBRAR' : `COBRAR ${fmt(Math.max(0, totalPrice - (parseFloat(desconto) || 0)))}`}
+            {carrinhoItens.length === 0 ? 'COBRAR' : `COBRAR ${fmt(Math.max(0, precoTotal - (parseFloat(desconto) || 0)))}`}
           </button>
         </div>
       </div>
@@ -334,7 +334,7 @@ export default function PDV() {
         >
           <ShoppingCart size={20} />
           <span>
-            {cartItems.length === 0 ? 'Carrinho vazio' : `Carrinho (${totalQty}) · ${fmt(totalPrice)}`}
+            {carrinhoItens.length === 0 ? 'Carrinho vazio' : `Carrinho (${totalQty}) · ${fmt(precoTotal)}`}
           </span>
           <ChevronUp size={18} />
         </button>
@@ -358,7 +358,7 @@ export default function PDV() {
                 <span className="bg-primaryGreen text-white text-xs font-bold px-2 py-0.5 rounded-md">{totalQty}</span>
               </div>
               <div className="flex items-center gap-3">
-                <button onClick={clearCart} className="text-sm text-slate-400 hover:text-red-400 transition-colors">
+                <button onClick={limparCarrinho} className="text-sm text-slate-400 hover:text-red-400 transition-colors">
                   Limpar
                 </button>
                 <button
@@ -372,13 +372,13 @@ export default function PDV() {
 
             {/* Cart Items */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {cartItems.length === 0 ? (
+              {carrinhoItens.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-slate-500">
                   <ShoppingCart size={40} className="mb-3 opacity-20" />
                   <p>Carrinho vazio</p>
                 </div>
               ) : (
-                cartItems.map((item) => (
+                carrinhoItens.map((item) => (
                   <CartItem key={item.id} item={item} onInc={incQty} onDec={decQty} onRemove={removeItem} />
                 ))
               )}
@@ -387,28 +387,28 @@ export default function PDV() {
             {/* Footer */}
             <div className="p-5 border-t border-darkBorder shrink-0">
               <div className="flex justify-between text-slate-400 text-sm mb-1">
-                <span>Subtotal</span><span>{fmt(totalPrice)}</span>
+                <span>Subtotal</span><span>{fmt(precoTotal)}</span>
               </div>
               <div className="flex justify-between text-white font-bold text-lg mb-4">
-                <span>Total</span><span className="text-primaryGreen">{fmt(totalPrice)}</span>
+                <span>Total</span><span className="text-primaryGreen">{fmt(precoTotal)}</span>
               </div>
               <button
                 className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
-                  cartItems.length > 0
+                  carrinhoItens.length > 0
                     ? 'bg-primaryGreen hover:bg-primaryHover text-white'
                     : 'bg-darkBorder text-slate-500 cursor-not-allowed'
                 }`}
                 onClick={() => { setIsCartOpen(false); setIsPaymentModalOpen(true); }}
-                disabled={cartItems.length === 0}
+                disabled={carrinhoItens.length === 0}
               >
-              {cartItems.length === 0 ? 'COBRAR' : `COBRAR ${fmt(Math.max(0, totalPrice - (parseFloat(desconto) || 0)))}`}
+              {carrinhoItens.length === 0 ? 'COBRAR' : `COBRAR ${fmt(Math.max(0, precoTotal - (parseFloat(desconto) || 0)))}`}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <PaymentModal
+      <ModalPagamento
         isOpen={isPaymentModalOpen}
         onClose={() => { setIsPaymentModalOpen(false); setDesconto(''); setClienteSelecionado(null); }}
         desconto={parseFloat(desconto) || 0}
@@ -416,7 +416,7 @@ export default function PDV() {
       />
       
       {showScanner && (
-        <BarcodeScanner 
+        <LeitorCodigoBarras 
           onScan={handleCameraScan} 
           onClose={() => setShowScanner(false)} 
         />

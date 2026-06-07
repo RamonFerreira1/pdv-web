@@ -97,8 +97,8 @@ app.delete('/api/produtos/:id', authenticateToken, async (req, res) => {
 
 // Rota para salvar uma venda
 app.post('/api/vendas', authenticateToken, async (req, res) => {
-  const { total, items } = req.body; // items é um array de { id, qty, price }
-  const usuarioId = req.user.id; // Pegar ID do usuário logado via JWT
+  const { total, itens } = req.body; // itens é um array de { id, quantidade, preco }
+  const usuarioId = req.usuario.id; // Pegar ID do usuário logado via JWT
   
   try {
     // Iniciar uma transação
@@ -112,16 +112,16 @@ app.post('/api/vendas', authenticateToken, async (req, res) => {
     const vendaId = vendaResult.insertId;
 
     // Inserir os itens da venda e atualizar o estoque
-    for (const item of items) {
+    for (const item of itens) {
       await db.query(
         'INSERT INTO venda_itens (ID_venda, ID_item, quantidade, preco_unitario) VALUES (?, ?, ?, ?)',
-        [vendaId, item.id, item.qty, item.price]
+        [vendaId, item.id, item.quantidade, item.preco]
       );
 
       // Descontar do estoque (somente se não for serviço/ilimitado)
       await db.query(
         'UPDATE item SET estoque = GREATEST(0, estoque - ?) WHERE ID = ?',
-        [item.qty, item.id]
+        [item.quantidade, item.id]
       );
     }
 
@@ -179,7 +179,7 @@ app.get('/api/vendas/:id', authenticateToken, async (req, res) => {
 // ==========================================
 
 app.get('/api/admin/usuarios', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'Admin') return res.status(403).json({ error: 'Acesso negado' });
+  if (req.usuario.role !== 'Admin') return res.status(403).json({ error: 'Acesso negado' });
   try {
     const [rows] = await db.query('SELECT ID, nome, sobrenome, email, role FROM usuario ORDER BY nome');
     res.json(rows);
@@ -189,7 +189,7 @@ app.get('/api/admin/usuarios', authenticateToken, async (req, res) => {
 });
 
 app.put('/api/admin/usuarios/:id/role', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'Admin') return res.status(403).json({ error: 'Acesso negado' });
+  if (req.usuario.role !== 'Admin') return res.status(403).json({ error: 'Acesso negado' });
   const { role } = req.body;
   const { id } = req.params;
   const rolesPermitidos = ['Admin', 'Gerente', 'Caixa'];
@@ -203,8 +203,8 @@ app.put('/api/admin/usuarios/:id/role', authenticateToken, async (req, res) => {
 });
 
 app.delete('/api/admin/usuarios/:id', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'Admin') return res.status(403).json({ error: 'Acesso negado' });
-  if (String(req.user.id) === String(req.params.id)) return res.status(400).json({ error: 'Você não pode excluir sua própria conta.' });
+  if (req.usuario.role !== 'Admin') return res.status(403).json({ error: 'Acesso negado' });
+  if (String(req.usuario.id) === String(req.params.id)) return res.status(400).json({ error: 'Você não pode excluir sua própria conta.' });
   try {
     await db.query('DELETE FROM usuario WHERE ID = ?', [req.params.id]);
     res.json({ success: true });

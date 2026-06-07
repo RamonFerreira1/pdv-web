@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 
-const ToastContext = createContext();
+const AvisoContext = createContext();
 
 const ICONS = {
   success: CheckCircle,
@@ -55,14 +55,14 @@ function ToastContainer({ toasts, onDismiss }) {
   );
 }
 
-export function ToastProvider({ children }) {
+export function AvisoProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
   const dismiss = useCallback((id) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  const showToast = useCallback((message, type = 'success', duration = 4000) => {
+  const mostrarAviso = useCallback((message, type = 'success', duration = 4000) => {
     const id = Date.now() + Math.random();
     setToasts(prev => [...prev.slice(-4), { id, message, type }]); // max 5 toasts
     setTimeout(() => {
@@ -71,15 +71,15 @@ export function ToastProvider({ children }) {
   }, []);
 
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <AvisoContext.Provider value={{ mostrarAviso }}>
       {children}
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
-    </ToastContext.Provider>
+    </AvisoContext.Provider>
   );
 }
 
 export function useToast() {
-  const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be used within ToastProvider');
+  const ctx = useContext(AvisoContext);
+  if (!ctx) throw new Error('useToast must be used within AvisoProvider');
   return ctx;
 }

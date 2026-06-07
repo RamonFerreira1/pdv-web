@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Users, Shield, Trash2, ChevronDown, ArrowLeft, Loader2, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
+import { AutenticacaoContext } from '../../context/AutenticacaoContext';
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/admin`;
 
@@ -14,7 +14,7 @@ const roleBadge = {
 };
 
 export default function UsuariosPage() {
-  const { user: currentUser } = useContext(AuthContext);
+  const { usuario: currentUser } = useContext(AutenticacaoContext);
   const navigate = useNavigate();
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);

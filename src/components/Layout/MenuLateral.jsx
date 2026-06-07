@@ -1,13 +1,13 @@
 import React, { useContext } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
+import { AutenticacaoContext } from '../../context/AutenticacaoContext';
 import { 
   Store, Edit3, ClipboardList, Tag, Undo2, Box, 
   BarChart2, PieChart, Calculator, Users, DollarSign, MessageCircle, X, LogOut, LayoutDashboard, UserCog, BookOpen
 } from 'lucide-react';
 
-export default function Sidebar({ onClose }) {
-  const { user, logout } = useContext(AuthContext);
+export default function MenuLateral({ onClose }) {
+  const { usuario, sair } = useContext(AutenticacaoContext);
   const navigate = useNavigate();
   
   const menus = [
@@ -31,7 +31,7 @@ export default function Sidebar({ onClose }) {
         { name: 'Controle de caixa', path: '/caixa', icon: Calculator },
         { name: 'Contas a Receber (Fiados)', path: '/fiados', icon: BookOpen },
         { name: 'Financeiro', path: '/financeiro', icon: DollarSign },
-        ...(user?.role === 'Admin' ? [{ name: 'Usuários', path: '/usuarios', icon: UserCog }] : []),
+        ...(usuario?.role === 'Admin' ? [{ name: 'Usuários', path: '/usuarios', icon: UserCog }] : []),
       ]
     },
     {
@@ -48,8 +48,8 @@ export default function Sidebar({ onClose }) {
   };
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    sair();
+    navigate('/entrar');
   };
 
   return (
@@ -57,8 +57,8 @@ export default function Sidebar({ onClose }) {
       {/* Header Profile Info */}
       <div className="bg-[#1e40af] p-5 text-white shrink-0 flex items-start justify-between">
         <div className="min-w-0">
-          <h2 className="text-lg font-bold truncate">{user ? user.nome : 'Carregando...'}</h2>
-          <p className="text-sm text-blue-200 truncate">{user ? user.email : ''}</p>
+          <h2 className="text-lg font-bold truncate">{usuario ? usuario.nome : 'Carregando...'}</h2>
+          <p className="text-sm text-blue-200 truncate">{usuario ? usuario.email : ''}</p>
         </div>
         {/* Close button — only visible on mobile */}
         <button

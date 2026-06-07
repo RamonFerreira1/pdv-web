@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { X } from 'lucide-react';
 
-export default function BarcodeScanner({ onScan, onClose }) {
+export default function LeitorCodigoBarras({ onScan, onClose }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {

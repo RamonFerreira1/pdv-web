@@ -1,14 +1,14 @@
 import React, { useContext, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, ArrowLeft } from 'lucide-react';
-import { POSContext } from '../context/POSContext';
-import ProductModal from '../components/Estoque/ProductModal';
-import DeleteConfirmModal from '../components/Estoque/DeleteConfirmModal';
+import { PDVContext } from '../context/PDVContext';
+import ModalProduto from '../components/Estoque/ModalProduto';
+import ModalConfirmarExclusao from '../components/Estoque/ModalConfirmarExclusao';
 
 const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 export default function Estoque() {
-  const { products, addProduct, updateProduct, deleteProduct } = useContext(POSContext);
+  const { produtos, addProduct, updateProduct, deleteProduct } = useContext(PDVContext);
   
   const [search, setSearch] = useState('');
   
@@ -19,8 +19,8 @@ export default function Estoque() {
   const [productToDelete, setProductToDelete] = useState(null);
 
   const filtered = useMemo(() => 
-    products.filter(p => p.name.toLowerCase().includes(search.toLowerCase())),
-    [products, search]
+    produtos.filter(p => p.name.toLowerCase().includes(search.toLowerCase())),
+    [produtos, search]
   );
 
   const handleAdd = () => {
@@ -206,14 +206,14 @@ export default function Estoque() {
         </div>
       </div>
 
-      <ProductModal 
+      <ModalProduto 
         isOpen={isProductModalOpen} 
         onClose={() => setIsProductModalOpen(false)}
         onSave={onSaveProduct}
         productToEdit={productToEdit}
       />
 
-      <DeleteConfirmModal 
+      <ModalConfirmarExclusao 
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={onConfirmDelete}

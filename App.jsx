@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { POSProvider } from './src/context/POSContext';
-import { AuthProvider, AuthContext } from './src/context/AuthContext';
-import MainLayout from './src/components/Layout/MainLayout';
+import { PDVProvider } from './src/context/PDVContext';
+import { AutenticacaoProvider, AutenticacaoContext } from './src/context/AutenticacaoContext';
+import LayoutPrincipal from './src/components/Layout/LayoutPrincipal';
 
 import PDV from './src/pages/PDV';
 import Estoque from './src/pages/Estoque';
@@ -21,11 +21,11 @@ import VendasPorProduto from './src/pages/Reports/VendasPorProduto';
 import Comissoes from './src/pages/Reports/Comissoes';
 import CaixaDashboard from './src/pages/Gestao/CaixaDashboard';
 import Login from './src/pages/Login';
-import { ToastProvider } from './src/context/ToastContext';
+import { AvisoProvider } from './src/context/AvisoContext';
 
 // ProtectedRoute Component
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useContext(AutenticacaoContext);
   const location = useLocation();
 
   if (loading) {
@@ -41,14 +41,14 @@ const ProtectedRoute = ({ children }) => {
 
 export default function App() {
   return (
-    <ToastProvider>
-    <AuthProvider>
-      <POSProvider>
+    <AvisoProvider>
+    <AutenticacaoProvider>
+      <PDVProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
             
-            <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+            <Route path="/" element={<ProtectedRoute><LayoutPrincipal /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
             <Route path="pdv" element={<PDV />} />
             
@@ -149,8 +149,8 @@ export default function App() {
           </Route>
           </Routes>
         </BrowserRouter>
-      </POSProvider>
-    </AuthProvider>
-    </ToastProvider>
+      </PDVProvider>
+    </AutenticacaoProvider>
+    </AvisoProvider>
   );
 }

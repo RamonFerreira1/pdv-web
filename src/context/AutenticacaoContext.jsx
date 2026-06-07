@@ -1,11 +1,11 @@
 import React, { createContext, useState, useEffect } from 'react';
 
-export const AuthContext = createContext();
+export const AutenticacaoContext = createContext();
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth`;
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+export const AutenticacaoProvider = ({ children }) => {
+  const [usuario, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('pdv_token') || null);
   const [loading, setLoading] = useState(true);
 
@@ -42,9 +42,9 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, [token]);
 
-  const login = async (email, password) => {
+  const entrar = async (email, password) => {
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`${API_URL}/entrar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -54,11 +54,11 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         setToken(data.token);
-        setUser(data.user);
+        setUser(data.usuario);
         localStorage.setItem('pdv_token', data.token);
         return { success: true };
       } else {
-        return { success: false, error: data.error || 'Erro ao realizar login.' };
+        return { success: false, error: data.error || 'Erro ao realizar entrar.' };
       }
     } catch (error) {
       return { success: false, error: 'Falha na conexão com o servidor.' };
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
       if (response.ok) {
         setToken(data.token);
         localStorage.setItem('pdv_token', data.token);
-        setUser(data.user);
+        setUser(data.usuario);
         return { success: true };
       } else {
         return { success: false, error: data.error || 'Erro ao criar conta.' };
@@ -86,14 +86,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const sair = () => {
     localStorage.removeItem('pdv_token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, registerUser, logout, loading }}>
+    <AutenticacaoContext.Provider value={{ usuario, entrar, registerUser, sair, loading }}>
       {children}
-    </AuthContext.Provider>
+    </AutenticacaoContext.Provider>
   );
 };

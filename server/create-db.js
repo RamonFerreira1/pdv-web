@@ -4,7 +4,7 @@ async function createDatabase() {
   try {
     const connection = await mysql.createConnection({
       host: 'localhost',
-      user: 'root',
+      usuario: 'root',
       password: ''
     });
     

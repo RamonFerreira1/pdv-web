@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { CheckCircle, Printer, Mail, Share2, ArrowRight, X, Loader2 } from 'lucide-react';
-import { POSContext } from '../../context/POSContext';
-import Receipt from './Receipt';
+import { PDVContext } from '../../context/PDVContext';
+import Recibo from './Recibo';
 
 const METODOS = [
   { id: 'dinheiro', label: 'Dinheiro', icon: '💵' },
@@ -41,9 +41,9 @@ function Teclado({ valor, onChange }) {
   );
 }
 
-export default function PaymentModal({ isOpen, onClose, desconto = 0, clienteId = null }) {
-  const { totalPrice, cartItems, finalizeSale } = useContext(POSContext);
-  const totalComDesconto = Math.max(0, totalPrice - desconto);
+export default function ModalPagamento({ isOpen, onClose, desconto = 0, clienteId = null }) {
+  const { precoTotal, carrinhoItens, finalizarVenda } = useContext(PDVContext);
+  const totalComDesconto = Math.max(0, precoTotal - desconto);
   
   const [metodo, setMetodo] = useState(null);
   const [valorRecebido, setValorRecebido] = useState('');
@@ -71,7 +71,7 @@ export default function PaymentModal({ isOpen, onClose, desconto = 0, clienteId 
 
   const handleFinalizar = async () => {
     setFinalizando(true);
-    await finalizeSale(metodo, valorNum, troco, desconto, clienteId);
+    await finalizarVenda(metodo, valorNum, troco, desconto, clienteId);
     setFinalizando(false);
     setSucesso(true);
   };
@@ -85,8 +85,8 @@ export default function PaymentModal({ isOpen, onClose, desconto = 0, clienteId 
   };
 
   const saleDetails = sucesso ? {
-    items: cartItems,
-    subtotal: totalPrice,
+    items: carrinhoItens,
+    subtotal: precoTotal,
     desconto: desconto || 0,
     total: totalComDesconto,
     troco: Math.max(troco, 0),
@@ -100,12 +100,12 @@ export default function PaymentModal({ isOpen, onClose, desconto = 0, clienteId 
     text += `Cupom: #${String(numeroVenda).padStart(6, '0')}\n`;
     text += `Data: ${new Date().toLocaleString('pt-BR')}\n\n`;
     text += `*ITENS:*\n`;
-    cartItems.forEach(item => {
+    carrinhoItens.forEach(item => {
       text += `${item.qty}x ${item.name} - ${fmt(item.price * item.qty)}\n`;
     });
     text += `\n`;
     if (desconto > 0) {
-      text += `Subtotal: ${fmt(totalPrice)}\n`;
+      text += `Subtotal: ${fmt(precoTotal)}\n`;
       text += `Desconto: -${fmt(desconto)}\n`;
     }
     text += `*TOTAL: ${fmt(totalComDesconto)}*\n`;
@@ -127,7 +127,7 @@ export default function PaymentModal({ isOpen, onClose, desconto = 0, clienteId 
             {fmt(totalComDesconto)}
             {desconto > 0 && (
               <div className="text-sm font-normal text-slate-400 mt-1 text-center">
-                <span className="line-through text-slate-500">{fmt(totalPrice)}</span>
+                <span className="line-through text-slate-500">{fmt(precoTotal)}</span>
                 <span className="text-amber-400 ml-2">- {fmt(desconto)} desconto</span>
               </div>
             )}
@@ -166,7 +166,7 @@ export default function PaymentModal({ isOpen, onClose, desconto = 0, clienteId 
 
         {/* Componente de Impressão (invisível na tela, visível no CSS @media print) */}
         <div className="hidden print:block absolute left-0 top-0 w-full h-full bg-white z-[9999]">
-          <Receipt saleDetails={saleDetails} />
+          <Recibo saleDetails={saleDetails} />
         </div>
       </div>
     );
@@ -249,7 +249,7 @@ export default function PaymentModal({ isOpen, onClose, desconto = 0, clienteId 
                 </h3>
                 <p className="text-slate-400">
                   {metodo === 'pix' && 'Aguardando confirmação do Pix...'}
-                  {(metodo === 'credito' || metodo === 'debito') && 'Insira ou aproxime o cartão na maquininha.'}
+                  {(metodo === 'credito' || metodo === 'debito') && 'Insira ou aproxime o carrinhoão na maquininha.'}
                 </p>
               </div>
             ) : (
@@ -268,7 +268,7 @@ export default function PaymentModal({ isOpen, onClose, desconto = 0, clienteId 
                   : 'bg-darkBorder text-slate-500 cursor-not-allowed'
               }`}
             >
-              {finalizando ? <Loader2 className="animate-spin mx-auto" size={22} /> : (podeFinalizar ? `Finalizar Pagamento • ${fmt(totalPrice)}` : 'Finalizar Pagamento')}
+              {finalizando ? <Loader2 className="animate-spin mx-auto" size={22} /> : (podeFinalizar ? `Finalizar Pagamento • ${fmt(precoTotal)}` : 'Finalizar Pagamento')}
             </button>
           </div>
         </div>

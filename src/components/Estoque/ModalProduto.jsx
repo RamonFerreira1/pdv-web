@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { useToast } from '../../context/ToastContext';
+import { useToast } from '../../context/AvisoContext';
 
-export default function ProductModal({ isOpen, onClose, onSave, productToEdit }) {
+export default function ModalProduto({ isOpen, onClose, onSave, productToEdit }) {
   const isEditing = !!productToEdit;
-  const { showToast } = useToast();
+  const { mostrarAviso } = useToast();
   
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
@@ -61,7 +61,7 @@ export default function ProductModal({ isOpen, onClose, onSave, productToEdit })
     const parsedStock = formData.stock === '' ? 999 : parseInt(formData.stock, 10);
     
     if (isNaN(parsedPrice)) {
-      showToast('Preço inválido. Insira um número válido.', 'error');
+      mostrarAviso('Preço inválido. Insira um número válido.', 'error');
       return;
     }
 
@@ -70,7 +70,7 @@ export default function ProductModal({ isOpen, onClose, onSave, productToEdit })
       price: parsedPrice,
       stock: isNaN(parsedStock) ? 0 : parsedStock,
     });
-    showToast(isEditing ? 'Produto atualizado!' : 'Produto adicionado!', 'success');
+    mostrarAviso(isEditing ? 'Produto atualizado!' : 'Produto adicionado!', 'success');
     onClose();
   };
 

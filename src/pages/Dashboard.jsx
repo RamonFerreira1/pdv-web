@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { TrendingUp, ShoppingBag, DollarSign, Package, AlertTriangle, BarChart2, Clock } from 'lucide-react';
-import { AuthContext } from '../context/AuthContext';
+import { AutenticacaoContext } from '../context/AutenticacaoContext';
 import { useNavigate } from 'react-router-dom';
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`;
@@ -31,7 +31,7 @@ function StatCard({ icon: Icon, label, value, sub, color = 'primaryGreen', gradi
 }
 
 export default function Dashboard() {
-  const { user } = useContext(AuthContext);
+  const { usuario } = useContext(AutenticacaoContext);
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -61,7 +61,7 @@ export default function Dashboard() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold mb-1">
-          {saudacao}, {user?.nome || 'Operador'}! 👋
+          {saudacao}, {usuario?.nome || 'Operador'}! 👋
         </h1>
         <p className="text-slate-400 flex items-center gap-2">
           <Clock size={14} />

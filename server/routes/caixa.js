@@ -9,7 +9,7 @@ router.get('/turno-atual', authenticateToken, async (req, res) => {
   try {
     const [turnos] = await db.query(
       "SELECT * FROM turnos_caixa WHERE usuario_id = ? AND status = 'Aberto' ORDER BY data_abertura DESC LIMIT 1",
-      [req.user.id]
+      [req.usuario.id]
     );
     res.json(turnos.length > 0 ? turnos[0] : null);
   } catch (error) {
@@ -25,13 +25,13 @@ router.post('/abrir', authenticateToken, async (req, res) => {
     // Verifica se já não existe um aberto
     const [abertos] = await db.query(
       "SELECT id FROM turnos_caixa WHERE usuario_id = ? AND status = 'Aberto'",
-      [req.user.id]
+      [req.usuario.id]
     );
     if (abertos.length > 0) return res.status(400).json({ error: 'Você já possui um caixa aberto.' });
 
     const [result] = await db.query(
       "INSERT INTO turnos_caixa (usuario_id, troco_inicial, status) VALUES (?, ?, 'Aberto')",
-      [req.user.id, troco_inicial || 0]
+      [req.usuario.id, troco_inicial || 0]
     );
     res.json({ id: result.insertId, status: 'Aberto', troco_inicial });
   } catch (error) {
@@ -61,7 +61,7 @@ router.post('/fechar', authenticateToken, async (req, res) => {
   try {
     await db.query(
       "UPDATE turnos_caixa SET status = 'Fechado', data_fechamento = CURRENT_TIMESTAMP, saldo_final = ? WHERE id = ? AND usuario_id = ?",
-      [saldo_final, turno_id, req.user.id]
+      [saldo_final, turno_id, req.usuario.id]
     );
     res.json({ success: true });
   } catch (error) {
@@ -83,7 +83,7 @@ router.get('/resumo/:turno_id', authenticateToken, async (req, res) => {
     // Total de vendas
     const [vendas] = await db.query(
       'SELECT SUM(total) as total_vendas FROM vendas WHERE usuario_id = ? AND data_venda >= ? AND data_venda <= ?',
-      [req.user.id, start, end]
+      [req.usuario.id, start, end]
     );
     
     // Entradas/Saidas (caixa) - assumindo q são todas desse turno p simplificar

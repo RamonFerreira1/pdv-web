@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Play, Square, DollarSign, Lock, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '../../context/ToastContext';
+import { useToast } from '../../context/AvisoContext';
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/caixa`;
 
@@ -14,7 +14,7 @@ const getAuthHeaders = () => {
 };
 
 export default function CaixaDashboard() {
-  const { showToast } = useToast();
+  const { mostrarAviso } = useToast();
   const [turno, setTurno] = useState(null);
   const [resumo, setResumo] = useState({ total_vendas: 0, movimentos: [] });
   const [loading, setLoading] = useState(true);
@@ -88,18 +88,18 @@ export default function CaixaDashboard() {
       if (res.ok) {
         setTurno(null);
         setSaldoFinal('');
-        showToast('Caixa encerrado com sucesso!', 'success');
+        mostrarAviso('Caixa encerrado com sucesso!', 'success');
       } else {
-        showToast('Erro ao fechar o caixa.', 'error');
+        mostrarAviso('Erro ao fechar o caixa.', 'error');
       }
     } catch (e) {
-      showToast('Falha na conexão com o servidor.', 'error');
+      mostrarAviso('Falha na conexão com o servidor.', 'error');
       console.error(e);
     }
   };
 
   const handleMovimento = async () => {
-    if (!valorMovimento || !descMovimento) return showToast('Preencha todos os campos.', 'warning');
+    if (!valorMovimento || !descMovimento) return mostrarAviso('Preencha todos os campos.', 'warning');
     try {
       const res = await fetch(`${API_URL}/movimento`, {
         method: 'POST',
@@ -111,9 +111,9 @@ export default function CaixaDashboard() {
         setValorMovimento('');
         setDescMovimento('');
         loadResumo(turno.id);
-        showToast(`${modalAcao} registrada com sucesso!`, 'success');
+        mostrarAviso(`${modalAcao} registrada com sucesso!`, 'success');
       } else {
-        showToast(`Erro ao registrar ${modalAcao.toLowerCase()}.`, 'error');
+        mostrarAviso(`Erro ao registrar ${modalAcao.toLowerCase()}.`, 'error');
       }
     } catch (e) {
       console.error(e);

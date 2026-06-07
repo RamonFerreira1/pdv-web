@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 
-export default function DeleteConfirmModal({ isOpen, onClose, onConfirm, productName }) {
+export default function ModalConfirmarExclusao({ isOpen, onClose, onConfirm, productName }) {
   if (!isOpen) return null;
 
   return (

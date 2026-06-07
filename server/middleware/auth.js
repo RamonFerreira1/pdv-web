@@ -8,16 +8,16 @@ function authenticateToken(req, res, next) {
 
   if (token == null) return res.status(401).json({ error: 'Token não fornecido' });
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
+  jwt.verify(token, JWT_SECRET, (err, usuario) => {
     if (err) return res.status(403).json({ error: 'Token inválido ou expirado' });
-    req.user = user;
+    req.usuario = usuario;
     next();
   });
 }
 
 // Middleware opcional para verificar se é Admin (para rotas que exigem)
 function requireAdmin(req, res, next) {
-  if (req.user && req.user.role === 'Admin') {
+  if (req.usuario && req.usuario.role === 'Admin') {
     next();
   } else {
     res.status(403).json({ error: 'Acesso negado: Requer privilégios de Administrador' });

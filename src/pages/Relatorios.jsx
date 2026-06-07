@@ -1,21 +1,21 @@
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, DollarSign, TrendingUp, XCircle, Users, ArrowLeft } from 'lucide-react';
-import { POSContext } from '../context/POSContext';
+import { PDVContext } from '../context/PDVContext';
 
 const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 export default function Relatorios() {
   const navigate = useNavigate();
-  const { sales, sellers, cancellations } = useContext(POSContext);
+  const { vendas, sellers, cancellations } = useContext(PDVContext);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
-  // Calculate actual revenue from mocked sales
-  const actualRevenue = sales.reduce((acc, sale) => acc + sale.total, 0);
+  // Calculate actual revenue from mocked vendas
+  const actualRevenue = vendas.reduce((acc, sale) => acc + sale.total, 0);
   // Include existing seller totals from mock + actual revenue
   const totalRevenue = sellers.reduce((acc, seller) => acc + seller.salesTotal, 0);
 
-  // Sorting sellers by sales
+  // Sorting sellers by vendas
   const sortedSellers = [...sellers].sort((a, b) => b.salesTotal - a.salesTotal);
 
   return (

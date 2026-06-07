@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { AutenticacaoContext } from '../context/AutenticacaoContext';
 import { Lock, Mail, Loader2 } from 'lucide-react';
 
 export default function Login() {
@@ -11,7 +11,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { login, registerUser } = useContext(AuthContext);
+  const { entrar, registerUser } = useContext(AutenticacaoContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -21,7 +21,7 @@ export default function Login() {
 
     let result;
     if (isLogin) {
-      result = await login(formData.email, formData.senha);
+      result = await entrar(formData.email, formData.senha);
     } else {
       result = await registerUser(formData);
     }

@@ -7,7 +7,7 @@ const { authenticateToken, JWT_SECRET } = require('../middleware/auth');
 const router = express.Router();
 
 // Rota de Login
-router.post('/login', async (req, res) => {
+router.post('/entrar', async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -17,8 +17,8 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
-    const user = users[0];
-    const validPassword = await bcrypt.compare(password, user.senha);
+    const usuario = users[0];
+    const validPassword = await bcrypt.compare(password, usuario.senha);
 
     if (!validPassword) {
       return res.status(401).json({ error: 'Credenciais inválidas' });
@@ -26,22 +26,22 @@ router.post('/login', async (req, res) => {
 
     // Gerar token
     const token = jwt.sign(
-      { id: user.ID, email: user.email, nome: user.nome, role: user.role },
+      { id: usuario.ID, email: usuario.email, nome: usuario.nome, role: usuario.role },
       JWT_SECRET,
       { expiresIn: '12h' } // Token expira em 12 horas
     );
 
     res.json({
       token,
-      user: {
-        id: user.ID,
-        nome: user.nome,
-        email: user.email,
-        role: user.role
+      usuario: {
+        id: usuario.ID,
+        nome: usuario.nome,
+        email: usuario.email,
+        role: usuario.role
       }
     });
   } catch (error) {
-    console.error('Erro no login:', error);
+    console.error('Erro no entrar:', error);
     res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
@@ -67,10 +67,10 @@ router.post('/register', async (req, res) => {
     );
 
     // Gerar token automático para já logar
-    const user = { id: result.insertId, nome, email, role: 'Caixa' };
-    const token = jwt.sign(user, JWT_SECRET, { expiresIn: '12h' });
+    const usuario = { id: result.insertId, nome, email, role: 'Caixa' };
+    const token = jwt.sign(usuario, JWT_SECRET, { expiresIn: '12h' });
 
-    res.json({ token, user });
+    res.json({ token, usuario });
   } catch (error) {
     console.error('Erro no registro:', error);
     res.status(500).json({ error: 'Erro interno do servidor. Tente novamente.' });
@@ -80,7 +80,7 @@ router.post('/register', async (req, res) => {
 // Rota para validar token e pegar dados do usuário logado
 router.get('/me', authenticateToken, async (req, res) => {
   try {
-    const [users] = await db.query('SELECT ID, nome, sobrenome, email, role FROM usuario WHERE ID = ?', [req.user.id]);
+    const [users] = await db.query('SELECT ID, nome, sobrenome, email, role FROM usuario WHERE ID = ?', [req.usuario.id]);
     
     if (users.length === 0) {
       return res.status(404).json({ error: 'Usuário não encontrado' });

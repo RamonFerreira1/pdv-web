@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, DollarSign, Search, CheckCircle } from 'lucide-react';
-import { useToast } from '../../context/ToastContext';
+import { useToast } from '../../context/AvisoContext';
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/fiado`;
 
 const fmt = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 export default function Fiados() {
-  const { showToast } = useToast();
+  const { mostrarAviso } = useToast();
   const [fiados, setFiados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState('');
@@ -26,7 +26,7 @@ export default function Fiados() {
       if (res.ok) setFiados(await res.json());
     } catch (e) {
       console.error(e);
-      showToast('Erro ao carregar fiados', 'error');
+      mostrarAviso('Erro ao carregar fiados', 'error');
     } finally {
       setLoading(false);
     }
@@ -38,8 +38,8 @@ export default function Fiados() {
 
   const handleAbater = async () => {
     const valorNum = parseFloat(valorAbate.replace(',', '.'));
-    if (isNaN(valorNum) || valorNum <= 0) return showToast('Valor inválido', 'error');
-    if (valorNum > abaterModal.valor_devido) return showToast('Valor maior que a dívida', 'error');
+    if (isNaN(valorNum) || valorNum <= 0) return mostrarAviso('Valor inválido', 'error');
+    if (valorNum > abaterModal.valor_devido) return mostrarAviso('Valor maior que a dívida', 'error');
 
     try {
       const token = localStorage.getItem('pdv_token');
@@ -53,16 +53,16 @@ export default function Fiados() {
       });
 
       if (res.ok) {
-        showToast('Abatimento registrado com sucesso!', 'success');
+        mostrarAviso('Abatimento registrado com sucesso!', 'success');
         setAbaterModal(null);
         setValorAbate('');
         fetchFiados();
       } else {
-        showToast('Erro ao registrar abatimento', 'error');
+        mostrarAviso('Erro ao registrar abatimento', 'error');
       }
     } catch (e) {
       console.error(e);
-      showToast('Erro na conexão', 'error');
+      mostrarAviso('Erro na conexão', 'error');
     }
   };
 

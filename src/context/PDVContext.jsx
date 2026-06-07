@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { useToast } from './ToastContext';
+import { useToast } from './AvisoContext';
 
-export const POSContext = createContext();
+export const PDVContext = createContext();
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`;
 
@@ -19,11 +19,11 @@ const initialSellers = [
   { id: 3, name: "João", salesTotal: 800 },
 ];
 
-export const POSProvider = ({ children }) => {
-  const { showToast } = useToast();
-  const [products, setProducts] = useState([]);
-  const [cart, setCart] = useState({});
-  const [sales, setSales] = useState([]);
+export const PDVProvider = ({ children }) => {
+  const { mostrarAviso } = useToast();
+  const [produtos, setProducts] = useState([]);
+  const [carrinho, setCart] = useState({});
+  const [vendas, setSales] = useState([]);
   const [sellers, setSellers] = useState(initialSellers);
   const [cancellations, setCancellations] = useState(0);
 
@@ -46,11 +46,11 @@ export const POSProvider = ({ children }) => {
   }, []);
 
   // Cart Functions
-  const cartItems = Object.values(cart);
-  const totalQty = cartItems.reduce((s, i) => s + i.qty, 0);
-  const totalPrice = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
+  const carrinhoItens = Object.values(carrinho);
+  const totalQty = carrinhoItens.reduce((s, i) => s + i.qty, 0);
+  const precoTotal = carrinhoItens.reduce((s, i) => s + i.price * i.qty, 0);
 
-  const addToCart = (product) => {
+  const adicionarAoCarrinho = (product) => {
     setCart((prev) => ({
       ...prev,
       [product.id]: prev[product.id]
@@ -83,10 +83,10 @@ export const POSProvider = ({ children }) => {
     });
   };
 
-  const clearCart = () => setCart({});
+  const limparCarrinho = () => setCart({});
 
-  const finalizeSale = async (method, received, change, desconto = 0, clienteId = null) => {
-    const totalComDesconto = Math.max(0, totalPrice - desconto);
+  const finalizarVenda = async (method, received, change, desconto = 0, clienteId = null) => {
+    const totalComDesconto = Math.max(0, precoTotal - desconto);
     try {
       // Registrar no banco de dados via API
       const response = await fetch(`${API_URL}/vendas`, {
@@ -97,7 +97,7 @@ export const POSProvider = ({ children }) => {
           desconto: desconto || 0,
           cliente_id: clienteId || null,
           metodo_pagamento: method,
-          items: cartItems.map(item => ({ id: item.id, qty: item.qty, price: item.price }))
+          items: carrinhoItens.map(item => ({ id: item.id, qty: item.qty, price: item.price }))
         })
       });
 
@@ -110,12 +110,12 @@ export const POSProvider = ({ children }) => {
         date: new Date().toISOString(),
         total: totalComDesconto,
         method,
-        items: cartItems,
+        items: carrinhoItens,
       };
       
       // Decrease stock locally
-      const nextProducts = products.map(p => {
-        const cartItem = cart[p.id];
+      const nextProducts = produtos.map(p => {
+        const cartItem = carrinho[p.id];
         if (cartItem && p.stock !== 999) { // 999 for services
           return { ...p, stock: Math.max(0, p.stock - cartItem.qty) };
         }
@@ -126,11 +126,11 @@ export const POSProvider = ({ children }) => {
       // Add sale
       setSales(prev => [...prev, newSale]);
       
-      clearCart();
-      showToast('Venda registrada com sucesso!', 'success');
+      limparCarrinho();
+      mostrarAviso('Venda registrada com sucesso!', 'success');
     } catch (error) {
       console.error("Erro ao finalizar a venda no banco:", error);
-      showToast('Erro ao registrar a venda. Tente novamente.', 'error');
+      mostrarAviso('Erro ao registrar a venda. Tente novamente.', 'error');
     }
   };
   
@@ -181,28 +181,28 @@ export const POSProvider = ({ children }) => {
   };
 
   return (
-    <POSContext.Provider
+    <PDVContext.Provider
       value={{
-        products,
-        cart,
-        cartItems,
+        produtos,
+        carrinho,
+        carrinhoItens,
         totalQty,
-        totalPrice,
-        sales,
+        precoTotal,
+        vendas,
         sellers,
         cancellations,
-        addToCart,
+        adicionarAoCarrinho,
         incQty,
         decQty,
         removeItem,
-        clearCart,
-        finalizeSale,
+        limparCarrinho,
+        finalizarVenda,
         addProduct,
         updateProduct,
         deleteProduct
       }}
     >
       {children}
-    </POSContext.Provider>
+    </PDVContext.Provider>
   );
 };

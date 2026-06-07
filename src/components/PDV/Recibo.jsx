@@ -2,7 +2,7 @@ import React from 'react';
 
 const fmt = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-export default function Receipt({ saleDetails }) {
+export default function Recibo({ saleDetails }) {
   if (!saleDetails) return null;
 
   const { items, subtotal, desconto, total, troco, metodo, numeroVenda, data, atendente } = saleDetails;

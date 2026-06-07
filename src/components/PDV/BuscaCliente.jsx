@@ -3,7 +3,7 @@ import { User, Search, X } from 'lucide-react';
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/dynamic`;
 
-export default function ClienteSearch({ clienteSelecionado, onSelect }) {
+export default function BuscaCliente({ clienteSelecionado, onSelect }) {
   const [query, setQuery] = useState('');
   const [resultados, setResultados] = useState([]);
   const [aberto, setAberto] = useState(false);
