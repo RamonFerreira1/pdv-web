@@ -23,6 +23,9 @@ app.use('/api/reports', reportRoutes);
 // Rotas de Controle de Caixa
 app.use('/api/caixa', caixaRoutes);
 
+// Rota de Health Check para monitores de uptime (ex: UptimeRobot)
+app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok', timestamp: new Date() }));
+
 // Rota para buscar todos os produtos
 app.get('/api/produtos', authenticateToken, async (req, res) => {
   try {

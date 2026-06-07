@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { TrendingUp, ShoppingBag, DollarSign, Package, AlertTriangle, BarChart2, Clock } from 'lucide-react';
-import { AuthContext } from '../../context/AuthContext';
+import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`;
