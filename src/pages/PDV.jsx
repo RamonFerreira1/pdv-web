@@ -2,6 +2,7 @@ import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { Search, ScanLine, ShoppingCart, Trash2, Plus, Minus, Package, X, ChevronUp, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { POSContext } from '../context/POSContext';
+import { AuthContext } from '../context/AuthContext';
 import PaymentModal from '../components/PDV/PaymentModal';
 
 const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -66,6 +67,7 @@ function CartItem({ item, onInc, onDec, onRemove }) {
 
 export default function PDV() {
   const { products, cartItems, totalQty, totalPrice, addToCart, incQty, decQty, removeItem, clearCart } = useContext(POSContext);
+  const { user } = useContext(AuthContext);
   const [search, setSearch] = useState('');
   const [activecat, setActivecat] = useState('Todos');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -169,9 +171,9 @@ export default function PDV() {
 
         {/* Topbar */}
         <div className="h-16 sm:h-20 border-b border-darkBorder px-4 sm:px-6 flex items-center gap-3 bg-darkCard/50 shrink-0">
-          <div className="flex items-center gap-2 bg-darkCard border border-darkBorder px-3 py-2 rounded-lg cursor-pointer shrink-0">
+          <div className="flex items-center gap-2 bg-darkCard border border-darkBorder px-3 py-2 rounded-lg shrink-0">
             <div className="w-2 h-2 rounded-full bg-primaryGreen" />
-            <span className="text-xs sm:text-sm font-medium text-slate-200 whitespace-nowrap">Robertinho ▾</span>
+            <span className="text-xs sm:text-sm font-medium text-slate-200 whitespace-nowrap">{user?.nome || 'Operador'}</span>
           </div>
 
           <div className="flex-1 relative">
