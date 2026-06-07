@@ -13,7 +13,10 @@ export default function HistoricoVendas() {
   useEffect(() => {
     const fetchVendas = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/vendas`);
+        const token = localStorage.getItem('pdv_token');
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/vendas`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         if (response.ok) {
           const data = await response.json();
           setVendas(data);

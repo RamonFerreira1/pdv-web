@@ -45,13 +45,13 @@ app.get('/api/produtos', authenticateToken, async (req, res) => {
   }
 });
 
-// Rota para adicionar produto (Opcional caso queira gerenciar no Estoque)
+// Rota para adicionar produto
 app.post('/api/produtos', authenticateToken, async (req, res) => {
-  const { name, price, stock } = req.body;
+  const { name, price, stock, codigo_barras } = req.body;
   try {
     const [result] = await db.query(
-      'INSERT INTO item (nome, preco, estoque) VALUES (?, ?, ?)',
-      [name, price, stock]
+      'INSERT INTO item (nome, preco, estoque, codigo_barras) VALUES (?, ?, ?, ?)',
+      [name, price, stock, codigo_barras || null]
     );
     res.status(201).json({ id: result.insertId, name, price, stock });
   } catch (error) {
@@ -62,12 +62,12 @@ app.post('/api/produtos', authenticateToken, async (req, res) => {
 
 // Rota para atualizar produto
 app.put('/api/produtos/:id', authenticateToken, async (req, res) => {
-  const { name, price, stock } = req.body;
+  const { name, price, stock, category, icon, codigo_barras } = req.body;
   const { id } = req.params;
   try {
     await db.query(
-      'UPDATE item SET nome = ?, preco = ?, estoque = ? WHERE ID = ?',
-      [name, price, stock, id]
+      'UPDATE item SET nome = ?, preco = ?, estoque = ?, codigo_barras = ? WHERE ID = ?',
+      [name, price, stock, codigo_barras || null, id]
     );
     res.json({ message: 'Produto atualizado' });
   } catch (error) {

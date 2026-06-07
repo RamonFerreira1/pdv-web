@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { CheckCircle, Printer, Mail, Share2, ArrowRight, X } from 'lucide-react';
+import { CheckCircle, Printer, Mail, Share2, ArrowRight, X, Loader2 } from 'lucide-react';
 import { POSContext } from '../../context/POSContext';
 import Receipt from './Receipt';
 
@@ -63,12 +63,16 @@ export default function PaymentModal({ isOpen, onClose }) {
   const troco = valorNum - totalPrice;
   const podeFinalizar = metodo !== null && (metodo !== 'dinheiro' || valorNum >= totalPrice);
 
-  const handleFinalizar = () => {
+  const [finalizando, setFinalizando] = useState(false);
+
+  const handleFinalizar = async () => {
+    setFinalizando(true);
+    await finalizeSale(metodo, valorNum, troco);
+    setFinalizando(false);
     setSucesso(true);
   };
 
   const handleNovaVenda = () => {
-    finalizeSale(metodo, valorNum, troco);
     onClose();
   };
 
@@ -221,14 +225,14 @@ export default function PaymentModal({ isOpen, onClose }) {
 
             <button
               onClick={handleFinalizar}
-              disabled={!podeFinalizar}
+              disabled={!podeFinalizar || finalizando}
               className={`w-full py-4 rounded-xl font-bold text-lg mt-auto transition-all ${
                 podeFinalizar 
                   ? 'bg-primaryGreen hover:bg-primaryHover text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]' 
                   : 'bg-darkBorder text-slate-500 cursor-not-allowed'
               }`}
             >
-              {podeFinalizar ? `Finalizar Pagamento • ${fmt(totalPrice)}` : 'Finalizar Pagamento'}
+              {finalizando ? <Loader2 className="animate-spin mx-auto" size={22} /> : (podeFinalizar ? `Finalizar Pagamento • ${fmt(totalPrice)}` : 'Finalizar Pagamento')}
             </button>
           </div>
         </div>

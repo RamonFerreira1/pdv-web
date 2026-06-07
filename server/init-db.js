@@ -120,7 +120,7 @@ async function initializeDb() {
       await db.query('ALTER TABLE usuario ADD COLUMN senha varchar(255)');
     } catch(e) {}
     try {
-      await db.query('ALTER TABLE usuario ADD COLUMN role varchar(20) DEFAULT "Caixa"');
+      await db.query("ALTER TABLE usuario ADD COLUMN role varchar(20) DEFAULT 'Caixa'");
     } catch(e) {}
 
     // Agora que as colunas existem, cria o admin

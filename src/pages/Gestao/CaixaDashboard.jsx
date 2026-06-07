@@ -18,9 +18,10 @@ export default function CaixaDashboard() {
   const [loading, setLoading] = useState(true);
   const [trocoInicial, setTrocoInicial] = useState('');
   const [saldoFinal, setSaldoFinal] = useState('');
-  const [modalAcao, setModalAcao] = useState(null); // 'sangria' ou 'suprimento'
+  const [modalAcao, setModalAcao] = useState(null);
   const [valorMovimento, setValorMovimento] = useState('');
   const [descMovimento, setDescMovimento] = useState('');
+  const [erro, setErro] = useState('');
 
   const navigate = useNavigate();
 
@@ -55,14 +56,21 @@ export default function CaixaDashboard() {
   }, []);
 
   const handleAbrir = async () => {
+    setErro('');
     try {
       const res = await fetch(`${API_URL}/abrir`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ troco_inicial: parseFloat(trocoInicial) || 0 })
       });
-      if (res.ok) loadTurno();
+      if (res.ok) {
+        loadTurno();
+      } else {
+        const data = await res.json();
+        setErro(data.error || 'Erro ao abrir o caixa.');
+      }
     } catch (e) {
+      setErro('Falha na conexão com o servidor.');
       console.error(e);
     }
   };
@@ -126,6 +134,9 @@ export default function CaixaDashboard() {
           <h2 className="text-2xl font-bold mb-2">Caixa Fechado</h2>
           <p className="text-slate-400 mb-6">Você precisa abrir o caixa para liberar a tela de vendas do PDV.</p>
           
+          {erro && (
+            <div className="bg-red-500/10 border border-red-500/40 text-red-400 rounded-xl px-4 py-3 mb-4 text-sm text-center">{erro}</div>
+          )}
           <div className="text-left mb-6">
             <label className="block text-sm font-medium text-slate-300 mb-2">Troco em gaveta (R$)</label>
             <input 

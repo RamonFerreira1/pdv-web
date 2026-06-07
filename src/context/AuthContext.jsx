@@ -74,6 +74,7 @@ export const AuthProvider = ({ children }) => {
       });
       const data = await response.json();
       if (response.ok) {
+        setToken(data.token);
         localStorage.setItem('pdv_token', data.token);
         setUser(data.user);
         return { success: true };
