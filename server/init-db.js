@@ -104,7 +104,26 @@ async function initializeDb() {
       await db.query(query);
     }
     
-    // Create default admin user if no users exist
+    // Try to alter the table if the column doesn't exist (ignores error if it does)
+    try {
+      await db.query('ALTER TABLE item ADD COLUMN codigo_barras VARCHAR(100) NULL');
+      console.log('Coluna codigo_barras adicionada a tabela item.');
+    } catch (e) {
+      // Ignore
+    }
+
+    // Try to alter the usuario table to add missing columns from previous schema versions
+    try {
+      await db.query('ALTER TABLE usuario ADD COLUMN email varchar(255) UNIQUE');
+    } catch(e) {}
+    try {
+      await db.query('ALTER TABLE usuario ADD COLUMN senha varchar(255)');
+    } catch(e) {}
+    try {
+      await db.query('ALTER TABLE usuario ADD COLUMN role varchar(20) DEFAULT "Caixa"');
+    } catch(e) {}
+
+    // Agora que as colunas existem, cria o admin
     const [users] = await db.query('SELECT COUNT(*) as count FROM usuario');
     if (users[0].count === 0) {
       const hashedPassword = await bcrypt.hash('123456', 10);
@@ -113,14 +132,6 @@ async function initializeDb() {
         ['Admin', 'Sistema', '00000000000', 'admin@pdv.com', hashedPassword, 'Admin']
       );
       console.log('Usuário admin criado (admin@pdv.com / 123456)');
-    }
-
-    // Try to alter the table if the column doesn't exist (ignores error if it does)
-    try {
-      await db.query('ALTER TABLE item ADD COLUMN codigo_barras VARCHAR(100) NULL');
-      console.log('Coluna codigo_barras adicionada a tabela item.');
-    } catch (e) {
-      // Ignore error if column already exists (ER_DUP_FIELDNAME)
     }
 
     console.log('Banco de dados sincronizado: Tabelas garantidas com sucesso.');
