@@ -46,6 +46,37 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Registro de Usuário (Criar Conta)
+router.post('/register', async (req, res) => {
+  const { nome, sobrenome, telefone, email, senha } = req.body;
+
+  try {
+    // Verificar se e-mail já existe
+    const [existingUsers] = await db.query('SELECT id FROM usuario WHERE email = ?', [email]);
+    if (existingUsers.length > 0) {
+      return res.status(400).json({ error: 'E-mail já está em uso.' });
+    }
+
+    // Criptografar senha
+    const hashedPassword = await bcrypt.hash(senha, 10);
+
+    // Inserir no banco
+    const [result] = await db.query(
+      'INSERT INTO usuario (nome, sobrenome, telefone, email, senha, role) VALUES (?, ?, ?, ?, ?, ?)',
+      [nome, sobrenome || '', telefone || '', email, hashedPassword, 'Caixa']
+    );
+
+    // Gerar token automático para já logar
+    const user = { id: result.insertId, nome, email, role: 'Caixa' };
+    const token = jwt.sign(user, JWT_SECRET, { expiresIn: '12h' });
+
+    res.json({ token, user });
+  } catch (error) {
+    console.error('Erro no registro:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
 // Rota para validar token e pegar dados do usuário logado
 router.get('/me', authenticateToken, async (req, res) => {
   try {

@@ -4,12 +4,14 @@ import { AuthContext } from '../context/AuthContext';
 import { Lock, Mail, Loader2 } from 'lucide-react';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({
+    nome: '', sobrenome: '', telefone: '', email: '', senha: ''
+  });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { login } = useContext(AuthContext);
+  const { login, registerUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -17,7 +19,12 @@ export default function Login() {
     setError('');
     setIsSubmitting(true);
 
-    const result = await login(email, password);
+    let result;
+    if (isLogin) {
+      result = await login(formData.email, formData.senha);
+    } else {
+      result = await registerUser(formData);
+    }
     
     if (result.success) {
       navigate('/');
@@ -34,8 +41,12 @@ export default function Login() {
           <div className="w-16 h-16 bg-primaryGreen/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Lock className="text-primaryGreen" size={32} />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Acesso ao Sistema</h1>
-          <p className="text-slate-400">Entre com suas credenciais para continuar</p>
+          <h1 className="text-2xl font-bold text-white mb-2">
+            {isLogin ? 'Acesso ao Sistema' : 'Criar Nova Conta'}
+          </h1>
+          <p className="text-slate-400">
+            {isLogin ? 'Entre com suas credenciais para continuar' : 'Preencha os dados abaixo para se cadastrar'}
+          </p>
         </div>
 
         {error && (
@@ -44,7 +55,33 @@ export default function Login() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Nome</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.nome}
+                  onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                  className="w-full bg-darkBg border border-darkBorder rounded-xl px-4 py-3 text-white focus:border-primaryGreen transition-colors"
+                  placeholder="Nome"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Sobrenome</label>
+                <input
+                  type="text"
+                  value={formData.sobrenome}
+                  onChange={(e) => setFormData({...formData, sobrenome: e.target.value})}
+                  className="w-full bg-darkBg border border-darkBorder rounded-xl px-4 py-3 text-white focus:border-primaryGreen transition-colors"
+                  placeholder="Opcional"
+                />
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1.5">E-mail</label>
             <div className="relative">
@@ -52,10 +89,10 @@ export default function Login() {
               <input
                 type="email"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
                 className="w-full bg-darkBg border border-darkBorder rounded-xl pl-12 pr-4 py-3.5 text-white focus:outline-none focus:border-primaryGreen transition-colors"
-                placeholder="admin@pdv.com"
+                placeholder={isLogin ? "admin@pdv.com" : "seu@email.com"}
               />
             </div>
           </div>
@@ -67,8 +104,8 @@ export default function Login() {
               <input
                 type="password"
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.senha}
+                onChange={(e) => setFormData({...formData, senha: e.target.value})}
                 className="w-full bg-darkBg border border-darkBorder rounded-xl pl-12 pr-4 py-3.5 text-white focus:outline-none focus:border-primaryGreen transition-colors"
                 placeholder="••••••"
               />
@@ -78,11 +115,28 @@ export default function Login() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-primaryGreen hover:bg-primaryHover text-white font-bold py-3.5 rounded-xl transition-colors mt-2 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full bg-primaryGreen hover:bg-primaryHover text-white font-bold py-3.5 rounded-xl transition-colors mt-4 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : 'Entrar'}
+            {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : (isLogin ? 'Entrar' : 'Criar Conta')}
           </button>
         </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-slate-400 text-sm">
+            {isLogin ? "Ainda não tem uma conta? " : "Já possui uma conta? "}
+            <button
+              type="button"
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError('');
+                setFormData({ nome: '', sobrenome: '', telefone: '', email: '', senha: '' });
+              }}
+              className="text-primaryGreen font-bold hover:underline"
+            >
+              {isLogin ? 'Criar Conta' : 'Fazer Login'}
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );

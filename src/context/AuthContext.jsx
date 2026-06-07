@@ -58,22 +58,40 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('pdv_token', data.token);
         return { success: true };
       } else {
-        return { success: false, error: data.error };
+        return { success: false, error: data.error || 'Erro ao realizar login.' };
       }
     } catch (error) {
-      console.error("Erro no login:", error);
-      return { success: false, error: "Erro de conexão com o servidor." };
+      return { success: false, error: 'Falha na conexão com o servidor.' };
+    }
+  };
+
+  const registerUser = async (userData) => {
+    try {
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('pdv_token', data.token);
+        setUser(data.user);
+        return { success: true };
+      } else {
+        return { success: false, error: data.error || 'Erro ao criar conta.' };
+      }
+    } catch (error) {
+      return { success: false, error: 'Falha na conexão com o servidor.' };
     }
   };
 
   const logout = () => {
-    setToken(null);
-    setUser(null);
     localStorage.removeItem('pdv_token');
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, login, registerUser, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
