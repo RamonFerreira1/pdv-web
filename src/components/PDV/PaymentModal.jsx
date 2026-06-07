@@ -40,8 +40,9 @@ function Teclado({ valor, onChange }) {
   );
 }
 
-export default function PaymentModal({ isOpen, onClose }) {
+export default function PaymentModal({ isOpen, onClose, desconto = 0, clienteId = null }) {
   const { totalPrice, cartItems, finalizeSale } = useContext(POSContext);
+  const totalComDesconto = Math.max(0, totalPrice - desconto);
   
   const [metodo, setMetodo] = useState(null);
   const [valorRecebido, setValorRecebido] = useState('');
@@ -60,14 +61,14 @@ export default function PaymentModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const valorNum = parseFloat(valorRecebido) || 0;
-  const troco = valorNum - totalPrice;
-  const podeFinalizar = metodo !== null && (metodo !== 'dinheiro' || valorNum >= totalPrice);
+  const troco = valorNum - totalComDesconto;
+  const podeFinalizar = metodo !== null && (metodo !== 'dinheiro' || valorNum >= totalComDesconto);
 
   const [finalizando, setFinalizando] = useState(false);
 
   const handleFinalizar = async () => {
     setFinalizando(true);
-    await finalizeSale(metodo, valorNum, troco);
+    await finalizeSale(metodo, valorNum, troco, desconto, clienteId);
     setFinalizando(false);
     setSucesso(true);
   };
@@ -97,7 +98,15 @@ export default function PaymentModal({ isOpen, onClose }) {
           <h2 className="text-2xl font-bold text-white mb-2">Venda finalizada!</h2>
           <p className="text-slate-400 font-mono mb-6">VENDA #{String(numeroVenda).padStart(4, '0')}</p>
           
-          <div className="text-4xl font-bold text-white mb-6">{fmt(totalPrice)}</div>
+          <div className="text-4xl font-bold text-white mb-6">
+            {fmt(totalComDesconto)}
+            {desconto > 0 && (
+              <div className="text-sm font-normal text-slate-400 mt-1 text-center">
+                <span className="line-through text-slate-500">{fmt(totalPrice)}</span>
+                <span className="text-amber-400 ml-2">- {fmt(desconto)} desconto</span>
+              </div>
+            )}
+          </div>
           
           <div className="flex items-center gap-2 text-slate-300 bg-darkBorder/50 px-4 py-2 rounded-lg mb-8">
             <span>{METODOS.find((m) => m.id === metodo)?.icon}</span>
@@ -160,7 +169,10 @@ export default function PaymentModal({ isOpen, onClose }) {
           <div className="w-1/2 p-6 border-r border-darkBorder overflow-y-auto">
             <div className="bg-darkBg rounded-xl p-6 flex flex-col items-center justify-center mb-6 border border-darkBorder/50">
               <span className="text-slate-400 text-sm uppercase tracking-wider font-semibold mb-2">Total a pagar</span>
-              <span className="text-4xl font-bold text-primaryGreen">{fmt(totalPrice)}</span>
+              <span className="text-4xl font-bold text-primaryGreen">{fmt(totalComDesconto)}</span>
+              {desconto > 0 && (
+                <span className="text-xs text-amber-400 mt-1">Desconto: {fmt(desconto)} aplicado</span>
+              )}
             </div>
 
             <h3 className="text-slate-300 font-medium mb-4">Método de pagamento</h3>

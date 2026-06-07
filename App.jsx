@@ -11,6 +11,8 @@ import CadastrosMenu from './src/pages/CadastrosMenu';
 import RelatoriosMenu from './src/pages/RelatoriosMenu';
 import HistoricoVendas from './src/pages/HistoricoVendas';
 import EmConstrucao from './src/pages/EmConstrucao';
+import Dashboard from './src/pages/Dashboard';
+import UsuariosPage from './src/pages/Gestao/UsuariosPage';
 
 import DynamicCrudPage from './src/components/Templates/DynamicCrudPage';
 import GenericReport from './src/components/Templates/GenericReport';
@@ -44,9 +46,9 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             
             <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-            <Route index element={<PDV />} />
+            <Route index element={<Dashboard />} />
+            <Route path="pdv" element={<PDV />} />
             
-            {/* Telas Principais */}
             <Route path="estoque" element={<Estoque />} />
             <Route path="cadastros" element={<CadastrosMenu />} />
             <Route path="relatorios-menu" element={<RelatoriosMenu />} />
@@ -103,6 +105,7 @@ export default function App() {
             } />
 
             <Route path="caixa" element={<CaixaDashboard />} />
+            <Route path="usuarios" element={<UsuariosPage />} />
 
             <Route path="fiado" element={
               <DynamicCrudPage 

@@ -79,8 +79,7 @@ export const AuthProvider = ({ children }) => {
         setUser(data.user);
         return { success: true };
       } else {
-        const errorMsg = data.detalhes ? `${data.error} Detalhes: ${data.detalhes}` : (data.error || 'Erro ao criar conta.');
-        return { success: false, error: errorMsg };
+        return { success: false, error: data.error || 'Erro ao criar conta.' };
       }
     } catch (error) {
       return { success: false, error: 'Falha na conexão com o servidor.' };

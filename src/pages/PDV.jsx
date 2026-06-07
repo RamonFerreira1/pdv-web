@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { POSContext } from '../context/POSContext';
 import { AuthContext } from '../context/AuthContext';
 import PaymentModal from '../components/PDV/PaymentModal';
+import ClienteSearch from '../components/PDV/ClienteSearch';
 
 const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -71,7 +72,9 @@ export default function PDV() {
   const [search, setSearch] = useState('');
   const [activecat, setActivecat] = useState('Todos');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false); // Mobile cart drawer
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [desconto, setDesconto] = useState('');
+  const [clienteSelecionado, setClienteSelecionado] = useState(null);
   
   const [isCaixaAberto, setIsCaixaAberto] = useState(true);
   const [caixaLoading, setCaixaLoading] = useState(true);
@@ -260,17 +263,32 @@ export default function PDV() {
         </div>
 
         <div className="p-5 border-t border-darkBorder bg-darkCard shrink-0">
-          <div className="flex justify-between items-center mb-2 text-slate-400 text-sm">
+          {/* Cliente */}
+          <ClienteSearch clienteSelecionado={clienteSelecionado} onSelect={setClienteSelecionado} />
+          
+          <div className="flex justify-between items-center mb-1 text-slate-400 text-sm">
             <span>Subtotal</span>
             <span>{fmt(totalPrice)}</span>
           </div>
-          <div className="flex justify-between items-center mb-5 text-slate-400 text-sm">
-            <span>Descontos</span>
-            <span>R$ 0,00</span>
+          
+          {/* Desconto */}
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-slate-400 text-sm">Desconto (R$)</span>
+            <input
+              type="number"
+              min="0"
+              max={totalPrice}
+              step="0.01"
+              value={desconto}
+              onChange={e => setDesconto(e.target.value)}
+              placeholder="0.00"
+              className="w-24 text-right bg-darkBg border border-darkBorder rounded-lg px-2 py-1 text-sm text-amber-400 focus:outline-none focus:border-amber-400 transition-colors"
+            />
           </div>
+
           <div className="flex justify-between items-center mb-5 text-white text-xl font-bold">
             <span>Total</span>
-            <span className="text-primaryGreen">{fmt(totalPrice)}</span>
+            <span className="text-primaryGreen">{fmt(Math.max(0, totalPrice - (parseFloat(desconto) || 0)))}</span>
           </div>
 
           <button
@@ -282,7 +300,7 @@ export default function PDV() {
             onClick={() => setIsPaymentModalOpen(true)}
             disabled={cartItems.length === 0}
           >
-            {cartItems.length === 0 ? 'COBRAR' : `COBRAR ${fmt(totalPrice)}`}
+            {cartItems.length === 0 ? 'COBRAR' : `COBRAR ${fmt(Math.max(0, totalPrice - (parseFloat(desconto) || 0)))}`}
           </button>
         </div>
       </div>
@@ -362,7 +380,7 @@ export default function PDV() {
                 onClick={() => { setIsCartOpen(false); setIsPaymentModalOpen(true); }}
                 disabled={cartItems.length === 0}
               >
-                {cartItems.length === 0 ? 'COBRAR' : `COBRAR ${fmt(totalPrice)}`}
+              {cartItems.length === 0 ? 'COBRAR' : `COBRAR ${fmt(Math.max(0, totalPrice - (parseFloat(desconto) || 0)))}`}
               </button>
             </div>
           </div>
@@ -371,7 +389,9 @@ export default function PDV() {
 
       <PaymentModal
         isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
+        onClose={() => { setIsPaymentModalOpen(false); setDesconto(''); setClienteSelecionado(null); }}
+        desconto={parseFloat(desconto) || 0}
+        clienteId={clienteSelecionado?.id || null}
       />
     </div>
   );

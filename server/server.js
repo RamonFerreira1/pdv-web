@@ -138,6 +138,66 @@ app.get('/api/vendas', authenticateToken, async (req, res) => {
   }
 });
 
+// Rota para detalhes de uma venda (com itens)
+app.get('/api/vendas/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [vendas] = await db.query('SELECT * FROM vendas WHERE ID = ?', [id]);
+    if (vendas.length === 0) return res.status(404).json({ error: 'Venda não encontrada' });
+    
+    const [itens] = await db.query(`
+      SELECT vi.quantidade, vi.preco_unitario, i.nome AS produto
+      FROM venda_itens vi
+      JOIN item i ON vi.ID_item = i.ID
+      WHERE vi.ID_venda = ?
+    `, [id]);
+
+    res.json({ ...vendas[0], itens });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao buscar detalhes da venda' });
+  }
+});
+
+// ==========================================
+// GESTÃO DE USUÁRIOS (ADMIN)
+// ==========================================
+
+app.get('/api/admin/usuarios', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'Admin') return res.status(403).json({ error: 'Acesso negado' });
+  try {
+    const [rows] = await db.query('SELECT ID, nome, sobrenome, email, role FROM usuario ORDER BY nome');
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/admin/usuarios/:id/role', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'Admin') return res.status(403).json({ error: 'Acesso negado' });
+  const { role } = req.body;
+  const { id } = req.params;
+  const rolesPermitidos = ['Admin', 'Gerente', 'Caixa'];
+  if (!rolesPermitidos.includes(role)) return res.status(400).json({ error: 'Role inválido' });
+  try {
+    await db.query('UPDATE usuario SET role = ? WHERE ID = ?', [role, id]);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/admin/usuarios/:id', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'Admin') return res.status(403).json({ error: 'Acesso negado' });
+  if (String(req.user.id) === String(req.params.id)) return res.status(400).json({ error: 'Você não pode excluir sua própria conta.' });
+  try {
+    await db.query('DELETE FROM usuario WHERE ID = ?', [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==========================================
 // ROTA DINÂMICA (GENERIC CRUD) PARA NOVAS TELAS
 // ==========================================

@@ -1,20 +1,103 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Clock, ShoppingBag, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect, useContext } from 'react';
+import { Search, Clock, ShoppingBag, ArrowLeft, ChevronDown, ChevronUp, Package, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`;
+const fmt = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+function VendaDetalhesModal({ vendaId, onClose }) {
+  const [venda, setVenda] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch_ = async () => {
+      try {
+        const token = localStorage.getItem('pdv_token');
+        const res = await fetch(`${API_URL}/vendas/${vendaId}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (res.ok) setVenda(await res.json());
+      } catch(e) { console.error(e); }
+      finally { setLoading(false); }
+    };
+    fetch_();
+  }, [vendaId]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-darkCard border border-darkBorder w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-darkBorder">
+          <h2 className="text-lg font-bold text-white">
+            {loading ? 'Carregando...' : `Venda #${venda?.ID}`}
+          </h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+            <X size={22} />
+          </button>
+        </div>
+        <div className="p-6">
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="w-8 h-8 border-2 border-primaryGreen border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : !venda ? (
+            <p className="text-slate-500 text-center py-6">Não foi possível carregar os detalhes.</p>
+          ) : (
+            <>
+              <div className="flex justify-between items-center mb-4 text-sm text-slate-400">
+                <span className="flex items-center gap-1">
+                  <Clock size={14} />
+                  {new Date(venda.data_venda).toLocaleString('pt-BR')}
+                </span>
+                <span className="font-bold text-primaryGreen text-lg">{fmt(parseFloat(venda.total))}</span>
+              </div>
+
+              <div className="bg-darkBg rounded-xl border border-darkBorder divide-y divide-darkBorder overflow-hidden">
+                {venda.itens && venda.itens.length > 0 ? (
+                  venda.itens.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-7 h-7 rounded-lg bg-primaryGreen/10 flex items-center justify-center shrink-0">
+                          <Package size={14} className="text-primaryGreen" />
+                        </div>
+                        <div>
+                          <p className="text-white text-sm font-medium">{item.produto}</p>
+                          <p className="text-slate-500 text-xs">{item.quantidade}x {fmt(parseFloat(item.preco_unitario))}</p>
+                        </div>
+                      </div>
+                      <span className="text-white font-semibold text-sm">
+                        {fmt(item.quantidade * parseFloat(item.preco_unitario))}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-slate-500 text-sm text-center py-4">Itens não disponíveis.</p>
+                )}
+              </div>
+
+              <div className="flex justify-between items-center mt-4 pt-4 border-t border-darkBorder">
+                <span className="font-bold text-white text-lg">Total</span>
+                <span className="font-bold text-primaryGreen text-xl">{fmt(parseFloat(venda.total))}</span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function HistoricoVendas() {
   const navigate = useNavigate();
   const [vendas, setVendas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [selectedVendaId, setSelectedVendaId] = useState(null);
 
   useEffect(() => {
     const fetchVendas = async () => {
       try {
         const token = localStorage.getItem('pdv_token');
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/vendas`, {
+        const response = await fetch(`${API_URL}/vendas`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         if (response.ok) {
@@ -47,11 +130,10 @@ export default function HistoricoVendas() {
           </button>
           <div>
             <h1 className="text-xl font-bold text-white">Histórico de Vendas</h1>
-            <p className="text-xs text-slate-400">{vendas.length} venda{vendas.length !== 1 ? 's' : ''} registrada{vendas.length !== 1 ? 's' : ''}</p>
+            <p className="text-xs text-slate-400">{vendas.length} venda{vendas.length !== 1 ? 's' : ''} registrada{vendas.length !== 1 ? 's' : ''} — clique para ver detalhes</p>
           </div>
         </div>
 
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
@@ -85,11 +167,12 @@ export default function HistoricoVendas() {
               return (
                 <div
                   key={venda.ID}
-                  className="bg-darkCard border border-darkBorder rounded-xl p-4 hover:border-primaryGreen/30 transition-colors"
+                  onClick={() => setSelectedVendaId(venda.ID)}
+                  className="bg-darkCard border border-darkBorder rounded-xl p-4 hover:border-primaryGreen/40 hover:shadow-lg transition-all cursor-pointer group"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-primaryGreen/10 flex items-center justify-center shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-primaryGreen/10 flex items-center justify-center shrink-0 group-hover:bg-primaryGreen/20 transition-colors">
                         <ShoppingBag size={18} className="text-primaryGreen" />
                       </div>
                       <div>
@@ -100,9 +183,12 @@ export default function HistoricoVendas() {
                         </div>
                       </div>
                     </div>
-                    <span className="text-primaryGreen font-bold text-lg shrink-0 ml-4">
-                      {fmt(parseFloat(venda.total))}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-primaryGreen font-bold text-lg shrink-0">
+                        {fmt(parseFloat(venda.total))}
+                      </span>
+                      <ChevronDown size={16} className="text-slate-500 group-hover:text-primaryGreen transition-colors" />
+                    </div>
                   </div>
                 </div>
               );
@@ -110,6 +196,10 @@ export default function HistoricoVendas() {
           </div>
         )}
       </div>
+
+      {selectedVendaId && (
+        <VendaDetalhesModal vendaId={selectedVendaId} onClose={() => setSelectedVendaId(null)} />
+      )}
     </div>
   );
 }
