@@ -17,7 +17,10 @@ export default function ProductModal({ isOpen, onClose, onSave, productToEdit })
     const fetchCategories = async () => {
       try {
         const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/dynamic`;
-        const res = await fetch(`${API_URL}/categorias`);
+        const token = localStorage.getItem('pdv_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+        const res = await fetch(`${API_URL}/categorias`, { headers });
         if (res.ok) {
           const data = await res.json();
           setCategories(data);

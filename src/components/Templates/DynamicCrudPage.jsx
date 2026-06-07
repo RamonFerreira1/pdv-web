@@ -4,6 +4,14 @@ import { Search, Plus, Edit2, Trash2, ChevronDown, ChevronUp, ArrowLeft } from '
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/dynamic`;
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('pdv_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+};
+
 export default function DynamicCrudPage({ title, endpoint, fields }) {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
@@ -17,7 +25,9 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`${API_URL}/${endpoint}`);
+      const res = await fetch(`${API_URL}/${endpoint}`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) setData(await res.json());
     } catch (e) {
       console.error(e);
@@ -52,7 +62,7 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
       const url = editingId ? `${API_URL}/${endpoint}/${editingId}` : `${API_URL}/${endpoint}`;
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(formData),
       });
       if (res.ok) {
@@ -72,7 +82,10 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
   const confirmDelete = async () => {
     if (!itemToDelete) return;
     try {
-      const res = await fetch(`${API_URL}/${endpoint}/${itemToDelete.id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/${endpoint}/${itemToDelete.id}`, { 
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
       if (res.ok) fetchData();
     } catch (e) {
       console.error(e);

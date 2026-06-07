@@ -1,6 +1,7 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { POSProvider } from './src/context/POSContext';
+import { AuthProvider, AuthContext } from './src/context/AuthContext';
 import MainLayout from './src/components/Layout/MainLayout';
 
 import PDV from './src/pages/PDV';
@@ -13,13 +14,35 @@ import EmConstrucao from './src/pages/EmConstrucao';
 
 import DynamicCrudPage from './src/components/Templates/DynamicCrudPage';
 import GenericReport from './src/components/Templates/GenericReport';
+import VendasPorProduto from './src/pages/Reports/VendasPorProduto';
+import Comissoes from './src/pages/Reports/Comissoes';
+import Login from './src/pages/Login';
+
+// ProtectedRoute Component
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useContext(AuthContext);
+  const location = useLocation();
+
+  if (loading) {
+    return <div className="h-screen flex items-center justify-center bg-darkBg text-primaryGreen">Carregando...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
 
 export default function App() {
   return (
-    <POSProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<MainLayout />}>
+    <AuthProvider>
+      <POSProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            
+            <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
             <Route index element={<PDV />} />
             
             {/* Telas Principais */}
@@ -105,10 +128,13 @@ export default function App() {
             
             <Route path="relatorios-totalizado" element={<Relatorios />} />
             <Route path="relatorios-consolidados" element={<GenericReport title="Relatórios Consolidados" />} />
-            <Route path="vendas-produto" element={<GenericReport title="Vendas por Produto" />} />
-            <Route path="vendas-servico" element={<GenericReport title="Vendas por Serviço" />} />
-            <Route path="comissoes" element={<GenericReport title="Comissão de Vendedores" />} />
-            <Route path="aniversarios" element={<GenericReport title="Aniversários do Mês" />} />
+            {/* Novas Rotas de Relatórios Reais */}
+            <Route path="relatorios/produtos" element={<VendasPorProduto />} />
+            <Route path="relatorios/comissoes" element={<Comissoes />} />
+
+            {/* Telas ainda em Construção */}
+            <Route path="relatorios/servicos" element={<GenericReport title="Vendas por Serviço" />} />
+            <Route path="relatorios/aniversariantes" element={<GenericReport title="Aniversariantes" />} />
             
             {/* Opcionais não requeridos ativamente com API, apenas Mock UI */}
             <Route path="combos" element={<GenericReport title="Gestão de Combos (Premium)" />} />
@@ -118,8 +144,9 @@ export default function App() {
             {/* Fallback genérico para links quebrados */}
             <Route path="*" element={<EmConstrucao />} />
           </Route>
-        </Routes>
-      </BrowserRouter>
-    </POSProvider>
+          </Routes>
+        </BrowserRouter>
+      </POSProvider>
+    </AuthProvider>
   );
 }

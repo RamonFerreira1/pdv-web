@@ -4,6 +4,14 @@ export const POSContext = createContext();
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`;
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('pdv_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+};
+
 const initialSellers = [
   { id: 1, name: "Robertinho", salesTotal: 1500 },
   { id: 2, name: "Maria", salesTotal: 2300 },
@@ -21,7 +29,9 @@ export const POSProvider = ({ children }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(`${API_URL}/produtos`);
+        const response = await fetch(`${API_URL}/produtos`, {
+          headers: getAuthHeaders()
+        });
         if (response.ok) {
           const data = await response.json();
           setProducts(data);
@@ -78,7 +88,7 @@ export const POSProvider = ({ children }) => {
       // Registrar no banco de dados via API
       const response = await fetch(`${API_URL}/vendas`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           total: totalPrice,
           items: cartItems.map(item => ({ id: item.id, qty: item.qty, price: item.price }))
@@ -110,9 +120,6 @@ export const POSProvider = ({ children }) => {
       // Add sale
       setSales(prev => [...prev, newSale]);
       
-      // Add to Robertinho
-      setSellers(prev => prev.map(s => s.id === 1 ? { ...s, salesTotal: s.salesTotal + totalPrice } : s));
-      
       clearCart();
     } catch (error) {
       console.error("Erro ao finalizar a venda no banco:", error);
@@ -125,7 +132,7 @@ export const POSProvider = ({ children }) => {
     try {
       const response = await fetch(`${API_URL}/produtos`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(product)
       });
       if (response.ok) {
@@ -141,7 +148,7 @@ export const POSProvider = ({ children }) => {
     try {
       const response = await fetch(`${API_URL}/produtos/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(updatedFields)
       });
       if (response.ok) {
@@ -155,7 +162,8 @@ export const POSProvider = ({ children }) => {
   const deleteProduct = async (id) => {
     try {
       const response = await fetch(`${API_URL}/produtos/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: getAuthHeaders()
       });
       if (response.ok) {
         setProducts(prev => prev.filter(p => p.id !== id));

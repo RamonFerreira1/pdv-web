@@ -2,6 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./db');
 const initializeDb = require('./init-db');
+const authRoutes = require('./routes/auth');
+const reportRoutes = require('./routes/reports');
+const { authenticateToken } = require('./middleware/auth');
 
 const app = express();
 app.use(cors());
@@ -10,8 +13,14 @@ app.use(express.json());
 // Sincronizar banco de dados ao iniciar
 initializeDb();
 
+// Rotas de Autenticação (públicas)
+app.use('/api/auth', authRoutes);
+
+// Rotas de Relatórios
+app.use('/api/reports', reportRoutes);
+
 // Rota para buscar todos os produtos
-app.get('/api/produtos', async (req, res) => {
+app.get('/api/produtos', authenticateToken, async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM item');
     
@@ -33,7 +42,7 @@ app.get('/api/produtos', async (req, res) => {
 });
 
 // Rota para adicionar produto (Opcional caso queira gerenciar no Estoque)
-app.post('/api/produtos', async (req, res) => {
+app.post('/api/produtos', authenticateToken, async (req, res) => {
   const { name, price, stock } = req.body;
   try {
     const [result] = await db.query(
@@ -48,7 +57,7 @@ app.post('/api/produtos', async (req, res) => {
 });
 
 // Rota para atualizar produto
-app.put('/api/produtos/:id', async (req, res) => {
+app.put('/api/produtos/:id', authenticateToken, async (req, res) => {
   const { name, price, stock } = req.body;
   const { id } = req.params;
   try {
@@ -64,7 +73,7 @@ app.put('/api/produtos/:id', async (req, res) => {
 });
 
 // Rota para deletar produto
-app.delete('/api/produtos/:id', async (req, res) => {
+app.delete('/api/produtos/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
     await db.query('DELETE FROM item WHERE ID = ?', [id]);
@@ -76,18 +85,18 @@ app.delete('/api/produtos/:id', async (req, res) => {
 });
 
 // Rota para salvar uma venda
-app.post('/api/vendas', async (req, res) => {
+app.post('/api/vendas', authenticateToken, async (req, res) => {
   const { total, items } = req.body; // items é um array de { id, qty, price }
+  const usuarioId = req.user.id; // Pegar ID do usuário logado via JWT
   
   try {
     // Iniciar uma transação
     await db.query('START TRANSACTION');
 
-    // Inserir a venda
-    // usuario_id pode ser setado fixo para 1 (Robertinho) já que não temos autenticação real no frontend
+    // Inserir a venda com o usuário real
     const [vendaResult] = await db.query(
       'INSERT INTO vendas (total, usuario_id) VALUES (?, ?)',
-      [total, 1] 
+      [total, usuarioId] 
     );
     const vendaId = vendaResult.insertId;
 
@@ -115,7 +124,7 @@ app.post('/api/vendas', async (req, res) => {
 });
 
 // Rota para listar histórico de vendas
-app.get('/api/vendas', async (req, res) => {
+app.get('/api/vendas', authenticateToken, async (req, res) => {
   try {
     const [vendas] = await db.query('SELECT * FROM vendas ORDER BY data_venda DESC');
     res.json(vendas);
@@ -132,7 +141,7 @@ app.get('/api/vendas', async (req, res) => {
 // Lista de tabelas permitidas por segurança
 const allowedTables = ['categorias', 'clientes', 'fornecedores', 'vendedores', 'pedidos', 'devolucoes', 'caixa', 'fiado', 'financeiro'];
 
-app.get('/api/dynamic/:table', async (req, res) => {
+app.get('/api/dynamic/:table', authenticateToken, async (req, res) => {
   const table = req.params.table;
   if (!allowedTables.includes(table)) return res.status(403).json({ error: 'Tabela não permitida' });
   try {
@@ -143,7 +152,7 @@ app.get('/api/dynamic/:table', async (req, res) => {
   }
 });
 
-app.post('/api/dynamic/:table', async (req, res) => {
+app.post('/api/dynamic/:table', authenticateToken, async (req, res) => {
   const table = req.params.table;
   if (!allowedTables.includes(table)) return res.status(403).json({ error: 'Tabela não permitida' });
   
@@ -160,7 +169,7 @@ app.post('/api/dynamic/:table', async (req, res) => {
   }
 });
 
-app.put('/api/dynamic/:table/:id', async (req, res) => {
+app.put('/api/dynamic/:table/:id', authenticateToken, async (req, res) => {
   const { table, id } = req.params;
   if (!allowedTables.includes(table)) return res.status(403).json({ error: 'Tabela não permitida' });
   
@@ -177,7 +186,7 @@ app.put('/api/dynamic/:table/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/dynamic/:table/:id', async (req, res) => {
+app.delete('/api/dynamic/:table/:id', authenticateToken, async (req, res) => {
   const { table, id } = req.params;
   if (!allowedTables.includes(table)) return res.status(403).json({ error: 'Tabela não permitida' });
   

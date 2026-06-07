@@ -11,7 +11,10 @@ const tables = [
     ID mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     nome varchar(30) NOT NULL,
     sobrenome varchar(30) NOT NULL,
-    telefone varchar(14) NOT NULL
+    telefone varchar(14) NOT NULL,
+    email varchar(255) UNIQUE,
+    senha varchar(255),
+    role varchar(20) DEFAULT 'Caixa'
   )`,
   `CREATE TABLE IF NOT EXISTS vendas (
     ID int(6) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -84,11 +87,25 @@ const tables = [
   )`
 ];
 
+const bcrypt = require('bcryptjs');
+
 async function initializeDb() {
   try {
     for (const query of tables) {
       await db.query(query);
     }
+    
+    // Create default admin user if no users exist
+    const [users] = await db.query('SELECT COUNT(*) as count FROM usuario');
+    if (users[0].count === 0) {
+      const hashedPassword = await bcrypt.hash('123456', 10);
+      await db.query(
+        'INSERT INTO usuario (nome, sobrenome, telefone, email, senha, role) VALUES (?, ?, ?, ?, ?, ?)',
+        ['Admin', 'Sistema', '00000000000', 'admin@pdv.com', hashedPassword, 'Admin']
+      );
+      console.log('Usuário admin criado (admin@pdv.com / 123456)');
+    }
+
     console.log('Banco de dados sincronizado: Tabelas garantidas com sucesso.');
   } catch (error) {
     console.error('Erro ao inicializar tabelas:', error);
