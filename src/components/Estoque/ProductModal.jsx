@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 export default function ProductModal({ isOpen, onClose, onSave, productToEdit }) {
   const isEditing = !!productToEdit;
   
+  const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -13,7 +14,25 @@ export default function ProductModal({ isOpen, onClose, onSave, productToEdit })
   });
 
   React.useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/dynamic`;
+        const res = await fetch(`${API_URL}/categorias`);
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data);
+          // Set default category to first available if creating new
+          if (!isEditing && data.length > 0) {
+             setFormData(prev => ({ ...prev, category: data[0].nome }));
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar categorias:', error);
+      }
+    };
+
     if (isOpen) {
+      fetchCategories();
       if (isEditing && productToEdit) {
         setFormData({
           name: productToEdit.name,
@@ -106,12 +125,20 @@ export default function ProductModal({ isOpen, onClose, onSave, productToEdit })
                 onChange={e => setFormData({...formData, category: e.target.value})}
                 className="w-full bg-darkBg border border-darkBorder rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-primaryGreen transition-colors appearance-none"
               >
-                <option value="Bebidas">Bebidas</option>
-                <option value="Alimentos">Alimentos</option>
-                <option value="Eletrônicos">Eletrônicos</option>
-                <option value="Roupas">Roupas</option>
-                <option value="Serviços">Serviços</option>
-                <option value="Diversos">Diversos</option>
+                {categories.length > 0 ? (
+                  categories.map(cat => (
+                    <option key={cat.id} value={cat.nome}>{cat.nome}</option>
+                  ))
+                ) : (
+                  <>
+                    <option value="Bebidas">Bebidas</option>
+                    <option value="Alimentos">Alimentos</option>
+                    <option value="Eletrônicos">Eletrônicos</option>
+                    <option value="Roupas">Roupas</option>
+                    <option value="Serviços">Serviços</option>
+                    <option value="Diversos">Diversos</option>
+                  </>
+                )}
               </select>
             </div>
             <div>

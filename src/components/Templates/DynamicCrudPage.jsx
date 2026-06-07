@@ -9,6 +9,8 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
   const [formData, setFormData] = useState({});
   const [editingId, setEditingId] = useState(null);
   const [expandedRow, setExpandedRow] = useState(null);
@@ -62,13 +64,21 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir?')) return;
+  const requestDelete = (item) => {
+    setItemToDelete(item);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
     try {
-      const res = await fetch(`${API_URL}/${endpoint}/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/${endpoint}/${itemToDelete.id}`, { method: 'DELETE' });
       if (res.ok) fetchData();
     } catch (e) {
       console.error(e);
+    } finally {
+      setIsDeleteModalOpen(false);
+      setItemToDelete(null);
     }
   };
 
@@ -147,7 +157,7 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
                       <Edit2 size={18} />
                     </button>
                     <button
-                      onClick={() => handleDelete(item.id)}
+                      onClick={() => requestDelete(item)}
                       className="p-2 text-slate-400 hover:text-red-400 transition-colors ml-2"
                     >
                       <Trash2 size={18} />
@@ -189,7 +199,7 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
                     <Edit2 size={16} />
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
+                    onClick={(e) => { e.stopPropagation(); requestDelete(item); }}
                     className="p-1.5 text-slate-400 hover:text-red-400 transition-colors"
                   >
                     <Trash2 size={16} />
@@ -253,6 +263,35 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
                 className="flex-1 py-3 bg-primaryGreen text-white rounded-xl hover:bg-primaryHover font-bold transition-colors"
               >
                 Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4 backdrop-blur-sm">
+          <div className="bg-darkCard border border-darkBorder rounded-2xl w-full max-w-sm overflow-hidden p-6 text-center shadow-2xl">
+            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="text-red-500" size={32} />
+            </div>
+            <h2 className="text-xl font-bold text-white mb-2">Confirmar Exclusão</h2>
+            <p className="text-slate-400 mb-6">
+              Deseja realmente excluir este registro? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="flex-1 py-3 bg-darkBorder text-slate-300 rounded-xl hover:bg-slate-700 font-bold transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 font-bold transition-colors"
+              >
+                Sim, Excluir
               </button>
             </div>
           </div>
