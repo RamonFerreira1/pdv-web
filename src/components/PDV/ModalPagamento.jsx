@@ -268,7 +268,7 @@ export default function ModalPagamento({ isOpen, onClose, desconto = 0, clienteI
                   : 'bg-darkBorder text-slate-500 cursor-not-allowed'
               }`}
             >
-              {finalizando ? <Loader2 className="animate-spin mx-auto" size={22} /> : (podeFinalizar ? `Finalizar Pagamento • ${fmt(precoTotal)}` : 'Finalizar Pagamento')}
+              {finalizando ? <Loader2 className="animate-spin mx-auto" size={22} /> : (podeFinalizar ? `Finalizar Pagamento • ${fmt(totalComDesconto)}` : 'Finalizar Pagamento')}
             </button>
           </div>
         </div>

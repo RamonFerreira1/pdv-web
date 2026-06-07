@@ -89,6 +89,7 @@ export const AutenticacaoProvider = ({ children }) => {
   const sair = () => {
     localStorage.removeItem('pdv_token');
     setUser(null);
+    setToken(null);
   };
 
   return (

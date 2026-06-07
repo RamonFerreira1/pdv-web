@@ -41,6 +41,7 @@ app.get('/api/produtos', authenticateToken, async (req, res) => {
       name: row.nome,
       price: parseFloat(row.preco),
       stock: row.estoque,
+      codigo_barras: row.codigo_barras || null, // necessário para o leitor de código de barras
       category: "Diversos", // Campo fixo pois não existe no banco
       icon: "📦" // Ícone padrão
     }));
@@ -97,7 +98,7 @@ app.delete('/api/produtos/:id', authenticateToken, async (req, res) => {
 
 // Rota para salvar uma venda
 app.post('/api/vendas', authenticateToken, async (req, res) => {
-  const { total, itens } = req.body; // itens é um array de { id, quantidade, preco }
+  const { total, items } = req.body; // frontend envia "items" com qty e price
   const usuarioId = req.usuario.id; // Pegar ID do usuário logado via JWT
   
   try {
@@ -112,16 +113,16 @@ app.post('/api/vendas', authenticateToken, async (req, res) => {
     const vendaId = vendaResult.insertId;
 
     // Inserir os itens da venda e atualizar o estoque
-    for (const item of itens) {
+    for (const item of (items || [])) {
       await db.query(
         'INSERT INTO venda_itens (ID_venda, ID_item, quantidade, preco_unitario) VALUES (?, ?, ?, ?)',
-        [vendaId, item.id, item.quantidade, item.preco]
+        [vendaId, item.id, item.qty, item.price]
       );
 
       // Descontar do estoque (somente se não for serviço/ilimitado)
       await db.query(
         'UPDATE item SET estoque = GREATEST(0, estoque - ?) WHERE ID = ?',
-        [item.quantidade, item.id]
+        [item.qty, item.id]
       );
     }
 

@@ -25,7 +25,7 @@ import { AvisoProvider } from './src/context/AvisoContext';
 
 // ProtectedRoute Component
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useContext(AutenticacaoContext);
+  const { usuario: user, loading } = useContext(AutenticacaoContext);
   const location = useLocation();
 
   if (loading) {
@@ -110,12 +110,6 @@ export default function App() {
             <Route path="caixa" element={<CaixaDashboard />} />
             <Route path="usuarios" element={<UsuariosPage />} />
 
-            <Route path="fiado" element={
-              <DynamicCrudPage 
-                title="Controle de Fiado" endpoint="fiado"
-                fields={[ { name: 'cliente_id', label: 'ID do Cliente', type: 'number' }, { name: 'valor_devido', label: 'Valor Devido', type: 'number' } ]} 
-              />
-            } />
 
             <Route path="financeiro" element={
               <DynamicCrudPage 
