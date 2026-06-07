@@ -83,14 +83,17 @@ export const POSProvider = ({ children }) => {
 
   const clearCart = () => setCart({});
 
-  const finalizeSale = async (method, received, change) => {
+  const finalizeSale = async (method, received, change, desconto = 0, clienteId = null) => {
+    const totalComDesconto = Math.max(0, totalPrice - desconto);
     try {
       // Registrar no banco de dados via API
       const response = await fetch(`${API_URL}/vendas`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
-          total: totalPrice,
+          total: totalComDesconto,
+          desconto: desconto || 0,
+          cliente_id: clienteId || null,
           items: cartItems.map(item => ({ id: item.id, qty: item.qty, price: item.price }))
         })
       });
@@ -102,7 +105,7 @@ export const POSProvider = ({ children }) => {
       const newSale = {
         id: Date.now(),
         date: new Date().toISOString(),
-        total: totalPrice,
+        total: totalComDesconto,
         method,
         items: cartItems,
       };
