@@ -36,9 +36,6 @@ body {
   body * {
     visibility: hidden;
   }
-  #root {
-    display: none;
-  }
   .receipt-print-container, .receipt-print-container * {
     visibility: visible;
   }
