@@ -1,0 +1,33 @@
+name: CI - Build & Lint
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install Dependencies (Frontend)
+      run: npm ci || npm install
+
+    - name: Run Build (Frontend)
+      run: npm run build
+      env:
+        CI: false # Ignora warnings do ESLint que barrariam o build na CI
+
+    - name: Install Dependencies (Backend)
+      working-directory: ./server
+      run: npm ci || npm install

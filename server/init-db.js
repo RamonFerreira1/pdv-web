@@ -134,6 +134,16 @@ async function initializeDb() {
       console.log('Usuário admin criado (admin@pdv.com / 123456)');
     }
 
+    // Cria produtos de teste se não houver nenhum
+    const [itemsCount] = await db.query('SELECT COUNT(*) as count FROM item');
+    if (itemsCount[0].count === 0) {
+      await db.query(
+        'INSERT INTO item (nome, preco, estoque, codigo_barras) VALUES (?, ?, ?, ?), (?, ?, ?, ?)',
+        ['Refrigerante Cola 350ml', 5.50, 50, '7891234567890', 'Salgadinho de Queijo', 4.00, 30, '7890987654321']
+      );
+      console.log('Produtos de teste criados com sucesso.');
+    }
+
     console.log('Banco de dados sincronizado: Tabelas garantidas com sucesso.');
   } catch (error) {
     console.error('Erro ao inicializar tabelas:', error);

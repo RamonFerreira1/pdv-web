@@ -32,7 +32,10 @@ export default function UsuariosPage() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchUsuarios(); }, []);
+  useEffect(() => {
+    fetchUsuarios();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleRoleChange = async (id, novoRole) => {
     try {
