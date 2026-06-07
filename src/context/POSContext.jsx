@@ -1,4 +1,5 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useToast } from './ToastContext';
 
 export const POSContext = createContext();
 
@@ -19,6 +20,7 @@ const initialSellers = [
 ];
 
 export const POSProvider = ({ children }) => {
+  const { showToast } = useToast();
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState({});
   const [sales, setSales] = useState([]);
@@ -124,9 +126,10 @@ export const POSProvider = ({ children }) => {
       setSales(prev => [...prev, newSale]);
       
       clearCart();
+      showToast('Venda registrada com sucesso!', 'success');
     } catch (error) {
       console.error("Erro ao finalizar a venda no banco:", error);
-      alert("Houve um erro ao registrar a venda no banco de dados.");
+      showToast('Erro ao registrar a venda. Tente novamente.', 'error');
     }
   };
   

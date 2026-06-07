@@ -80,6 +80,12 @@ export default function PDV() {
   const [caixaLoading, setCaixaLoading] = useState(true);
   const navigate = useNavigate();
 
+  const handleClearCart = () => {
+    clearCart();
+    setDesconto('');
+    setClienteSelecionado(null);
+  };
+
   useEffect(() => {
     const checkCaixa = async () => {
       try {
@@ -241,7 +247,7 @@ export default function PDV() {
             </span>
           </div>
           <button
-            onClick={clearCart}
+            onClick={handleClearCart}
             className="text-sm font-medium text-slate-400 hover:text-red-400 transition-colors"
           >
             Limpar

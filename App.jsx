@@ -20,6 +20,7 @@ import VendasPorProduto from './src/pages/Reports/VendasPorProduto';
 import Comissoes from './src/pages/Reports/Comissoes';
 import CaixaDashboard from './src/pages/Gestao/CaixaDashboard';
 import Login from './src/pages/Login';
+import { ToastProvider } from './src/context/ToastContext';
 
 // ProtectedRoute Component
 const ProtectedRoute = ({ children }) => {
@@ -39,6 +40,7 @@ const ProtectedRoute = ({ children }) => {
 
 export default function App() {
   return (
+    <ToastProvider>
     <AuthProvider>
       <POSProvider>
         <BrowserRouter>
@@ -147,5 +149,6 @@ export default function App() {
         </BrowserRouter>
       </POSProvider>
     </AuthProvider>
+    </ToastProvider>
   );
 }
