@@ -1,0 +1,2 @@
+npx eslint src/ --ext .js,.jsx
+npm run build

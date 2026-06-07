@@ -49,6 +49,7 @@ export default function ModalPagamento({ isOpen, onClose, desconto = 0, clienteI
   const [valorRecebido, setValorRecebido] = useState('');
   const [sucesso, setSucesso] = useState(false);
   const [numeroVenda, setNumeroVenda] = useState(0);
+  const [finalizando, setFinalizando] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -67,7 +68,6 @@ export default function ModalPagamento({ isOpen, onClose, desconto = 0, clienteI
     (metodo !== 'dinheiro' || valorNum >= totalComDesconto) &&
     (metodo !== 'fiado' || clienteId !== null);
 
-  const [finalizando, setFinalizando] = useState(false);
 
   const handleFinalizar = async () => {
     setFinalizando(true);
