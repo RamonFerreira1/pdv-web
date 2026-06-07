@@ -4,6 +4,7 @@ const db = require('./db');
 const initializeDb = require('./init-db');
 const authRoutes = require('./routes/auth');
 const reportRoutes = require('./routes/reports');
+const caixaRoutes = require('./routes/caixa');
 const { authenticateToken } = require('./middleware/auth');
 
 const app = express();
@@ -18,6 +19,9 @@ app.use('/api/auth', authRoutes);
 
 // Rotas de Relatórios
 app.use('/api/reports', reportRoutes);
+
+// Rotas de Controle de Caixa
+app.use('/api/caixa', caixaRoutes);
 
 // Rota para buscar todos os produtos
 app.get('/api/produtos', authenticateToken, async (req, res) => {

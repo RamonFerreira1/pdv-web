@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useContext } from 'react';
-import { Search, ScanLine, ShoppingCart, Trash2, Plus, Minus, Package, X, ChevronUp } from 'lucide-react';
+import React, { useState, useMemo, useContext, useEffect } from 'react';
+import { Search, ScanLine, ShoppingCart, Trash2, Plus, Minus, Package, X, ChevronUp, Lock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { POSContext } from '../context/POSContext';
 import PaymentModal from '../components/PDV/PaymentModal';
 
@@ -69,6 +70,66 @@ export default function PDV() {
   const [activecat, setActivecat] = useState('Todos');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false); // Mobile cart drawer
+  
+  const [isCaixaAberto, setIsCaixaAberto] = useState(true);
+  const [caixaLoading, setCaixaLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkCaixa = async () => {
+      try {
+        const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/caixa`;
+        const token = localStorage.getItem('pdv_token');
+        const res = await fetch(`${API_URL}/turno-atual`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setIsCaixaAberto(!!data);
+        }
+      } catch (e) {
+        console.error('Erro ao checar caixa', e);
+      } finally {
+        setCaixaLoading(false);
+      }
+    };
+    checkCaixa();
+  }, []);
+
+  // Leitor de Código de Barras (Bipador)
+  useEffect(() => {
+    let barcodeBuffer = '';
+    let lastKeyTime = Date.now();
+
+    const handleKeyDown = (e) => {
+      // Ignora digitação em inputs para não conflitar com a barra de pesquisa
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      const currentTime = Date.now();
+      
+      // Se demorou mais que 50ms entre teclas, provavelmente é digitação humana e não leitor
+      if (currentTime - lastKeyTime > 50) {
+        barcodeBuffer = '';
+      }
+      lastKeyTime = currentTime;
+
+      if (e.key === 'Enter' && barcodeBuffer.length > 0) {
+        e.preventDefault();
+        // Buscar produto pelo codigo de barras
+        const scannedProduct = products.find(p => p.codigo_barras === barcodeBuffer);
+        if (scannedProduct) {
+          addToCart(scannedProduct);
+          // Opcional: Feedback visual ou sonoro aqui
+        }
+        barcodeBuffer = '';
+      } else if (e.key.length === 1) {
+        barcodeBuffer += e.key;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [products, addToCart]);
 
   const categories = ['Todos', ...new Set(products.map((p) => p.category))];
 
@@ -79,6 +140,26 @@ export default function PDV() {
     ),
     [products, search, activecat]
   );
+
+  if (caixaLoading) return <div className="p-10 text-primaryGreen h-full flex items-center justify-center">Verificando Caixa...</div>;
+
+  if (!isCaixaAberto) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center bg-darkBg text-white p-6">
+        <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
+          <Lock className="text-red-500" size={48} />
+        </div>
+        <h1 className="text-3xl font-bold mb-3">Caixa Fechado</h1>
+        <p className="text-slate-400 mb-8 max-w-md text-center">Para iniciar as vendas, você precisa abrir o caixa do seu turno informando o troco inicial.</p>
+        <button 
+          onClick={() => navigate('/caixa')}
+          className="bg-primaryGreen hover:bg-primaryHover text-white font-bold py-4 px-8 rounded-xl transition-colors shadow-lg shadow-primaryGreen/20"
+        >
+          Ir para Controle de Caixa
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full w-full relative">

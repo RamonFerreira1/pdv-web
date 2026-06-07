@@ -16,6 +16,7 @@ import DynamicCrudPage from './src/components/Templates/DynamicCrudPage';
 import GenericReport from './src/components/Templates/GenericReport';
 import VendasPorProduto from './src/pages/Reports/VendasPorProduto';
 import Comissoes from './src/pages/Reports/Comissoes';
+import CaixaDashboard from './src/pages/Gestao/CaixaDashboard';
 import Login from './src/pages/Login';
 
 // ProtectedRoute Component
@@ -101,12 +102,7 @@ export default function App() {
               />
             } />
 
-            <Route path="caixa" element={
-              <DynamicCrudPage 
-                title="Controle de Caixa" endpoint="caixa"
-                fields={[ { name: 'tipo', label: 'Tipo (Entrada/Saída)' }, { name: 'descricao', label: 'Descrição' }, { name: 'valor', label: 'Valor', type: 'number' } ]} 
-              />
-            } />
+            <Route path="caixa" element={<CaixaDashboard />} />
 
             <Route path="fiado" element={
               <DynamicCrudPage 

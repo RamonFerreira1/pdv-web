@@ -84,6 +84,15 @@ const tables = [
     descricao VARCHAR(255) NOT NULL,
     valor DECIMAL(10,2) NOT NULL,
     status VARCHAR(50) DEFAULT 'Pendente'
+  )`,
+  `CREATE TABLE IF NOT EXISTS turnos_caixa (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    data_abertura TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_fechamento TIMESTAMP NULL,
+    troco_inicial DECIMAL(10,2) DEFAULT 0.00,
+    saldo_final DECIMAL(10,2) NULL,
+    status VARCHAR(20) DEFAULT 'Aberto'
   )`
 ];
 
@@ -104,6 +113,14 @@ async function initializeDb() {
         ['Admin', 'Sistema', '00000000000', 'admin@pdv.com', hashedPassword, 'Admin']
       );
       console.log('Usuário admin criado (admin@pdv.com / 123456)');
+    }
+
+    // Try to alter the table if the column doesn't exist (ignores error if it does)
+    try {
+      await db.query('ALTER TABLE item ADD COLUMN codigo_barras VARCHAR(100) NULL');
+      console.log('Coluna codigo_barras adicionada a tabela item.');
+    } catch (e) {
+      // Ignore error if column already exists (ER_DUP_FIELDNAME)
     }
 
     console.log('Banco de dados sincronizado: Tabelas garantidas com sucesso.');

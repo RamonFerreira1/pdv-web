@@ -1,11 +1,15 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import { 
   Store, Edit3, ClipboardList, Tag, Undo2, Box, 
-  BarChart2, PieChart, Calculator, Users, DollarSign, MessageCircle, X
+  BarChart2, PieChart, Calculator, Users, DollarSign, MessageCircle, X, LogOut
 } from 'lucide-react';
 
 export default function Sidebar({ onClose }) {
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+  
   const menus = [
     {
       title: null,
@@ -41,13 +45,18 @@ export default function Sidebar({ onClose }) {
     if (onClose) onClose();
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <aside className="w-72 bg-darkCard border-r border-darkBorder flex flex-col h-full shrink-0 overflow-y-auto">
       {/* Header Profile Info */}
       <div className="bg-[#1e40af] p-5 text-white shrink-0 flex items-start justify-between">
         <div className="min-w-0">
-          <h2 className="text-lg font-bold truncate">lucimarjo@outlook.com</h2>
-          <p className="text-sm text-blue-200">Administrador</p>
+          <h2 className="text-lg font-bold truncate">{user ? user.nome : 'Carregando...'}</h2>
+          <p className="text-sm text-blue-200 truncate">{user ? user.email : ''}</p>
         </div>
         {/* Close button — only visible on mobile */}
         <button
@@ -115,6 +124,17 @@ export default function Sidebar({ onClose }) {
             )}
           </div>
         ))}
+
+        <div className="mx-6 mt-4 mb-2 border-b border-darkBorder/50" />
+        <div className="px-4 pb-6">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white font-bold py-3 rounded-xl transition-colors"
+          >
+            <LogOut size={18} />
+            <span>Sair (Logout)</span>
+          </button>
+        </div>
       </nav>
     </aside>
   );

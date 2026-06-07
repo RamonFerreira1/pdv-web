@@ -42,10 +42,11 @@ export default function ProductModal({ isOpen, onClose, onSave, productToEdit })
           price: productToEdit.price,
           stock: productToEdit.stock === 999 ? '' : productToEdit.stock,
           category: productToEdit.category,
-          icon: productToEdit.icon
+          icon: productToEdit.icon,
+          codigo_barras: productToEdit.codigo_barras || ''
         });
       } else {
-        setFormData({ name: '', price: '', stock: '', category: 'Diversos', icon: '📦' });
+        setFormData({ name: '', price: '', stock: '', category: 'Diversos', icon: '📦', codigo_barras: '' });
       }
     }
   }, [isOpen, isEditing, productToEdit]);
@@ -107,6 +108,19 @@ export default function ProductModal({ isOpen, onClose, onSave, productToEdit })
                 placeholder="0.00"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-1">Cód. Barras</label>
+              <input 
+                type="text"
+                value={formData.codigo_barras}
+                onChange={e => setFormData({...formData, codigo_barras: e.target.value})}
+                className="w-full bg-darkBg border border-darkBorder rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-primaryGreen transition-colors"
+                placeholder="Opcional"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1">Estoque</label>
               <input 

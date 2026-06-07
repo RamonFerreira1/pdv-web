@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { CheckCircle, Printer, Mail, Share2, ArrowRight, X } from 'lucide-react';
 import { POSContext } from '../../context/POSContext';
+import Receipt from './Receipt';
 
 const METODOS = [
   { id: 'dinheiro', label: 'Dinheiro', icon: '💵' },
@@ -40,7 +41,7 @@ function Teclado({ valor, onChange }) {
 }
 
 export default function PaymentModal({ isOpen, onClose }) {
-  const { totalPrice, finalizeSale } = useContext(POSContext);
+  const { totalPrice, cartItems, finalizeSale } = useContext(POSContext);
   
   const [metodo, setMetodo] = useState(null);
   const [valorRecebido, setValorRecebido] = useState('');
@@ -71,6 +72,19 @@ export default function PaymentModal({ isOpen, onClose }) {
     onClose();
   };
 
+  const handleImprimir = () => {
+    window.print();
+  };
+
+  const saleDetails = sucesso ? {
+    items: cartItems,
+    total: totalPrice,
+    troco: Math.max(troco, 0),
+    metodo: METODOS.find((m) => m.id === metodo)?.label,
+    numeroVenda: numeroVenda,
+    data: new Date().toISOString()
+  } : null;
+
   if (sucesso) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -87,7 +101,10 @@ export default function PaymentModal({ isOpen, onClose }) {
           </div>
 
           <div className="flex w-full gap-3 mb-6">
-            <button className="flex-1 flex flex-col items-center justify-center gap-2 bg-darkBorder hover:bg-slate-700 text-slate-300 py-3 rounded-xl transition-colors">
+            <button 
+              onClick={handleImprimir}
+              className="flex-1 flex flex-col items-center justify-center gap-2 bg-darkBorder hover:bg-slate-700 text-slate-300 py-3 rounded-xl transition-colors"
+            >
               <Printer size={20} />
               <span className="text-xs">Imprimir</span>
             </button>
@@ -108,6 +125,11 @@ export default function PaymentModal({ isOpen, onClose }) {
             <span>Nova Venda</span>
             <ArrowRight size={20} />
           </button>
+        </div>
+
+        {/* Componente de Impressão (invisível na tela, visível no CSS @media print) */}
+        <div className="hidden print:block absolute left-0 top-0 w-full h-full bg-white z-[9999]">
+          <Receipt saleDetails={saleDetails} />
         </div>
       </div>
     );
