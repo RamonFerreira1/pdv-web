@@ -38,8 +38,8 @@ export default function Login() {
     <div className="min-h-screen bg-darkBg flex flex-col justify-center items-center p-4">
       <div className="w-full max-w-md bg-darkCard border border-darkBorder rounded-3xl p-8 shadow-2xl">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primaryGreen/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Lock className="text-primaryGreen" size={32} />
+          <div className="w-24 h-24 mx-auto mb-4">
+            <img src="/logo.png" alt="Smart PDV Logo" className="w-full h-full object-contain drop-shadow-md" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">
             {isLogin ? 'Acesso ao Sistema' : 'Criar Nova Conta'}
