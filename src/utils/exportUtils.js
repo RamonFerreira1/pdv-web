@@ -1,3 +1,4 @@
+// Autor: ISSAMO - FE Pessoa 3 (Estoque e Cadastros)
 export const exportToCSV = (data, filename) => {
   if (!data || !data.length) return;
 
@@ -29,3 +30,4 @@ export const exportToCSV = (data, filename) => {
     document.body.removeChild(link);
   }
 };
+
