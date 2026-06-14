@@ -1,3 +1,5 @@
+// Autor: FE Pessoa 4 — Dashboard, Gestão & Relatórios
+// Responsabilidade: Relatório de vendas agrupado por produto com receita total
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart2, ArrowLeft, Package, TrendingUp } from 'lucide-react';

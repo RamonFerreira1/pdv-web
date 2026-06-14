@@ -1,3 +1,5 @@
+// Autor: FE Pessoa 4 — Dashboard, Gestão & Relatórios
+// Responsabilidade: Dashboard principal com métricas e visão geral de vendas
 import React, { useEffect, useState, useContext } from 'react';
 import { TrendingUp, ShoppingBag, DollarSign, Package, AlertTriangle, BarChart2, Clock } from 'lucide-react';
 import { AutenticacaoContext } from '../context/AutenticacaoContext';
