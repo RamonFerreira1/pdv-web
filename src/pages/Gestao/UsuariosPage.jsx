@@ -1,3 +1,5 @@
+// Autor: FE Pessoa 4 — Dashboard, Gestão & Relatórios
+// Responsabilidade: Gestão de usuários e permissões do sistema
 import React, { useState, useEffect, useContext } from 'react';
 import { Users, Shield, Trash2, ChevronDown, ArrowLeft, Loader2, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

@@ -1,3 +1,5 @@
+// Autor: FE Pessoa 4 — Dashboard, Gestão & Relatórios
+// Responsabilidade: Tela de contas a receber (fiado) com abatimento de dívidas
 import React, { useState, useEffect } from 'react';
 import { BookOpen, DollarSign, Search, CheckCircle } from 'lucide-react';
 import { useToast } from '../../context/AvisoContext';

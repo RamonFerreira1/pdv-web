@@ -1,3 +1,5 @@
+// Autor: FE Pessoa 4 — Dashboard, Gestão & Relatórios
+// Responsabilidade: Controle de caixa - abrir, fechar, sangria e suprimento
 import React, { useState, useEffect } from 'react';
 import { Calculator, Play, Square, DollarSign, Lock, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

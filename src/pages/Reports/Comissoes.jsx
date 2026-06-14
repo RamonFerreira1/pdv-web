@@ -1,3 +1,5 @@
+// Autor: FE Pessoa 4 — Dashboard, Gestão & Relatórios
+// Responsabilidade: Relatório de comissões de vendedores (taxa 5%)
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, ArrowLeft, DollarSign, Award } from 'lucide-react';

@@ -1,3 +1,5 @@
+// Autor: FE Pessoa 4 — Dashboard, Gestão & Relatórios
+// Responsabilidade: Histórico completo de vendas com busca e modal de detalhes
 import React, { useState, useEffect, useContext } from 'react';
 import { Search, Clock, ShoppingBag, ArrowLeft, ChevronDown, ChevronUp, Package, X, Download, Printer } from 'lucide-react';
 import { exportToCSV } from '../utils/exportUtils';

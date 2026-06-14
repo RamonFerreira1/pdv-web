@@ -1,3 +1,5 @@
+// Autor: FE Pessoa 4 — Dashboard, Gestão & Relatórios
+// Responsabilidade: Relatório gerencial com faturamento, cancelamentos e vendas por vendedor
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, DollarSign, TrendingUp, XCircle, Users, ArrowLeft } from 'lucide-react';

@@ -1,3 +1,5 @@
+// Autor: FE Pessoa 4 — Dashboard, Gestão & Relatórios
+// Responsabilidade: Menu de navegação para os tipos de relatórios
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DollarSign, Tag, Wrench, PackagePlus, Users, Gift, ChevronRight, ArrowLeft } from 'lucide-react';
