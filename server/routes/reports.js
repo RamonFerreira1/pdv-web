@@ -102,4 +102,27 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
   }
 });
 
+// Relatório: Vendas por Serviço (itens com estoque=999 = ilimitado = serviços)
+router.get('/vendas-servico', authenticateToken, async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        i.nome AS servico, 
+        SUM(vi.quantidade) AS quantidade_vendida,
+        SUM(vi.quantidade * vi.preco_unitario) AS receita_total
+      FROM venda_itens vi
+      JOIN item i ON vi.ID_item = i.ID
+      WHERE i.estoque = 999
+      GROUP BY i.ID, i.nome
+      ORDER BY receita_total DESC
+    `;
+    const [rows] = await db.query(query);
+    res.json(rows);
+  } catch (error) {
+    console.error('Erro no relatório de vendas por serviço:', error);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
 module.exports = router;
+

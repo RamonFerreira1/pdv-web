@@ -30,6 +30,64 @@ app.use('/api/fiado', fiadoRoutes);
 // Rota de Health Check para monitores de uptime (ex: UptimeRobot)
 app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok', timestamp: new Date() }));
 
+// ==========================================
+// CLIENTES
+// ==========================================
+
+// Listar todos os clientes
+app.get('/api/clientes', authenticateToken, async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM clientes ORDER BY nome');
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao buscar clientes' });
+  }
+});
+
+// Adicionar cliente
+app.post('/api/clientes', authenticateToken, async (req, res) => {
+  const { nome, telefone, email, documento, data_nascimento } = req.body;
+  try {
+    const [result] = await db.query(
+      'INSERT INTO clientes (nome, telefone, email, documento, data_nascimento) VALUES (?, ?, ?, ?, ?)',
+      [nome, telefone || null, email || null, documento || null, data_nascimento || null]
+    );
+    res.status(201).json({ id: result.insertId, nome, telefone, email, documento, data_nascimento });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao adicionar cliente' });
+  }
+});
+
+// Atualizar cliente
+app.put('/api/clientes/:id', authenticateToken, async (req, res) => {
+  const { nome, telefone, email, documento, data_nascimento } = req.body;
+  const { id } = req.params;
+  try {
+    await db.query(
+      'UPDATE clientes SET nome = ?, telefone = ?, email = ?, documento = ?, data_nascimento = ? WHERE id = ?',
+      [nome, telefone || null, email || null, documento || null, data_nascimento || null, id]
+    );
+    res.json({ message: 'Cliente atualizado' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao atualizar cliente' });
+  }
+});
+
+// Deletar cliente
+app.delete('/api/clientes/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query('DELETE FROM clientes WHERE id = ?', [id]);
+    res.json({ message: 'Cliente excluído' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao excluir cliente' });
+  }
+});
+
 // Rota para buscar todos os produtos
 app.get('/api/produtos', authenticateToken, async (req, res) => {
   try {

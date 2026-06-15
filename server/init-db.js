@@ -39,7 +39,8 @@ const tables = [
     nome VARCHAR(255) NOT NULL,
     telefone VARCHAR(20),
     email VARCHAR(255),
-    documento VARCHAR(50)
+    documento VARCHAR(50),
+    data_nascimento DATE
   )`,
   `CREATE TABLE IF NOT EXISTS fornecedores (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -111,6 +112,15 @@ async function initializeDb() {
     } catch (e) {
       // Ignore
     }
+
+    // Migração: adicionar data_nascimento na tabela clientes se não existir
+    try {
+      await db.query('ALTER TABLE clientes ADD COLUMN data_nascimento DATE NULL');
+      console.log('Coluna data_nascimento adicionada a tabela clientes.');
+    } catch (e) {
+      // Já existe, ignorar
+    }
+
 
     // Try to alter the usuario table to add missing columns from previous schema versions
     try {
