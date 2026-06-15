@@ -98,3 +98,5 @@ export const AutenticacaoProvider = ({ children }) => {
     </AutenticacaoContext.Provider>
   );
 };
+
+//A
