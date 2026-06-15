@@ -18,8 +18,7 @@ export default function BuscaCliente({ clienteSelecionado, onSelect }) {
   }, []);
 
   useEffect(() => {
-    if (!query || query.length < 2) { setResultados([]); return; }
-    const timer = setTimeout(async () => {
+    const fetchClientes = async () => {
       try {
         const token = localStorage.getItem('pdv_token');
         const res = await fetch(`${API_URL}/clientes`, {
@@ -27,17 +26,26 @@ export default function BuscaCliente({ clienteSelecionado, onSelect }) {
         });
         if (res.ok) {
           const data = await res.json();
-          const q = query.toLowerCase();
-          setResultados(data.filter(c =>
-            c.nome?.toLowerCase().includes(q) ||
-            c.documento?.includes(q) ||
-            c.telefone?.includes(q)
-          ).slice(0, 5));
+          if (!query) {
+            setResultados(data.slice(0, 5));
+          } else {
+            const q = query.toLowerCase();
+            setResultados(data.filter(c =>
+              c.nome?.toLowerCase().includes(q) ||
+              c.documento?.includes(q) ||
+              c.telefone?.includes(q)
+            ).slice(0, 5));
+          }
         }
       } catch(e) { console.error(e); }
+    };
+
+    const timer = setTimeout(() => {
+      if (aberto) fetchClientes();
     }, 300);
+
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, aberto]);
 
   if (clienteSelecionado) {
     return (
