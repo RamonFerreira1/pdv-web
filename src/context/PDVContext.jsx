@@ -54,19 +54,38 @@ export const PDVProvider = ({ children }) => {
   const precoTotal = carrinhoItens.reduce((s, i) => s + i.price * i.qty, 0);
 
   const adicionarAoCarrinho = (product) => {
-    setCart((prev) => ({
-      ...prev,
-      [product.id]: prev[product.id]
-        ? { ...prev[product.id], qty: prev[product.id].qty + 1 }
-        : { ...product, qty: 1 },
-    }));
+    setCart((prev) => {
+      const currentQty = prev[product.id] ? prev[product.id].qty : 0;
+      
+      if (product.stock !== 999 && currentQty + 1 > product.stock) {
+        mostrarAviso(`Estoque insuficiente. Apenas ${product.stock} unidades disponíveis de ${product.name}.`, 'warning');
+        return prev; // não adiciona
+      }
+
+      return {
+        ...prev,
+        [product.id]: prev[product.id]
+          ? { ...prev[product.id], qty: currentQty + 1 }
+          : { ...product, qty: 1 },
+      };
+    });
   };
 
   const incQty = (id) => {
-    setCart((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], qty: prev[id].qty + 1 },
-    }));
+    setCart((prev) => {
+      const product = prev[id];
+      if (!product) return prev;
+      
+      if (product.stock !== 999 && product.qty + 1 > product.stock) {
+        mostrarAviso(`Estoque insuficiente. Apenas ${product.stock} unidades disponíveis de ${product.name}.`, 'warning');
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [id]: { ...product, qty: product.qty + 1 },
+      };
+    });
   };
 
   const decQty = (id) => {
