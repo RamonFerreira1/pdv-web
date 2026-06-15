@@ -37,7 +37,7 @@ app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok', timest
 // Listar todos os clientes
 app.get('/api/clientes', authenticateToken, async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM clientes ORDER BY nome');
+    const [rows] = await db.query('SELECT * FROM clientes WHERE ativo = true OR ativo IS NULL ORDER BY nome');
     res.json(rows);
   } catch (error) {
     console.error(error);
@@ -80,7 +80,7 @@ app.put('/api/clientes/:id', authenticateToken, async (req, res) => {
 app.delete('/api/clientes/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
-    await db.query('DELETE FROM clientes WHERE id = ?', [id]);
+    await db.query('UPDATE clientes SET ativo = false WHERE id = ?', [id]);
     res.json({ message: 'Cliente excluído' });
   } catch (error) {
     console.error(error);
@@ -156,17 +156,17 @@ app.delete('/api/produtos/:id', authenticateToken, async (req, res) => {
 
 // Rota para salvar uma venda
 app.post('/api/vendas', authenticateToken, async (req, res) => {
-  const { total, items, metodo_pagamento } = req.body; // frontend envia metodo_pagamento
+  const { total, items, metodo_pagamento, cliente_id } = req.body; // frontend envia metodo_pagamento
   const usuarioId = req.usuario.id; // Pegar ID do usuário logado via JWT
   
   try {
     // Iniciar uma transação
     await db.query('START TRANSACTION');
 
-    // Inserir a venda com o usuário real e método de pagamento
+    // Inserir a venda com o usuário real, método de pagamento e cliente
     const [vendaResult] = await db.query(
-      'INSERT INTO vendas (total, usuario_id, metodo_pagamento) VALUES (?, ?, ?)',
-      [total, usuarioId, metodo_pagamento || 'dinheiro'] 
+      'INSERT INTO vendas (total, usuario_id, metodo_pagamento, cliente_id) VALUES (?, ?, ?, ?)',
+      [total, usuarioId, metodo_pagamento || 'dinheiro', cliente_id || null] 
     );
     const vendaId = vendaResult.insertId;
 
@@ -283,7 +283,11 @@ app.get('/api/dynamic/:table', authenticateToken, async (req, res) => {
   const table = req.params.table;
   if (!allowedTables.includes(table)) return res.status(403).json({ error: 'Tabela não permitida' });
   try {
-    const [rows] = await db.query(`SELECT * FROM ${table}`);
+    let query = `SELECT * FROM ${table}`;
+    if (table === 'clientes' || table === 'usuario') {
+      query += ` WHERE ativo = true OR ativo IS NULL`;
+    }
+    const [rows] = await db.query(query);
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -334,6 +338,13 @@ app.delete('/api/dynamic/:table/:id', authenticateToken, async (req, res) => {
       if (fiados.length > 0) {
         return res.status(400).json({ error: 'Não é possível excluir este cliente pois ele possui dívidas de fiado em aberto.' });
       }
+      await db.query(`UPDATE clientes SET ativo = false WHERE id = ?`, [id]);
+      return res.json({ message: 'Cliente desativado com sucesso' });
+    }
+
+    if (table === 'usuario') {
+      await db.query(`UPDATE usuario SET ativo = false WHERE id = ?`, [id]);
+      return res.json({ message: 'Usuário desativado com sucesso' });
     }
 
     await db.query(`DELETE FROM ${table} WHERE id = ?`, [id]);

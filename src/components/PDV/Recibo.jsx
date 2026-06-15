@@ -69,15 +69,25 @@ export default function Recibo({ saleDetails }) {
           <span>TOTAL</span>
           <span>{fmt(total)}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="uppercase">Pagamento: {metodo}</span>
-          <span>{fmt(total + (troco > 0 ? troco : 0))}</span>
-        </div>
-        {troco > 0 && (
-          <div className="flex justify-between">
-            <span>TROCO</span>
-            <span>{fmt(troco)}</span>
+        
+        {metodo?.toLowerCase() === 'fiado' ? (
+          <div className="text-center mt-2 border border-black p-1">
+            <span className="font-bold">VENDA A PRAZO (FIADO)</span><br/>
+            <span>VALOR RECEBIDO: R$ 0,00</span>
           </div>
+        ) : (
+          <>
+            <div className="flex justify-between">
+              <span className="uppercase">Pagamento: {metodo}</span>
+              <span>{fmt(total + (troco > 0 ? troco : 0))}</span>
+            </div>
+            {troco > 0 && (
+              <div className="flex justify-between">
+                <span>TROCO</span>
+                <span>{fmt(troco)}</span>
+              </div>
+            )}
+          </>
         )}
       </div>
 

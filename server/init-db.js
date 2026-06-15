@@ -146,6 +146,24 @@ async function initializeDb() {
       console.log('Coluna ativo adicionada a tabela item.');
     } catch (e) {}
 
+    // Migração: adicionar ativo na tabela clientes
+    try {
+      await db.query('ALTER TABLE clientes ADD COLUMN ativo BOOLEAN DEFAULT TRUE');
+      console.log('Coluna ativo adicionada a tabela clientes.');
+    } catch (e) {}
+
+    // Migração: adicionar ativo na tabela usuario
+    try {
+      await db.query('ALTER TABLE usuario ADD COLUMN ativo BOOLEAN DEFAULT TRUE');
+      console.log('Coluna ativo adicionada a tabela usuario.');
+    } catch (e) {}
+
+    // Migração: adicionar cliente_id na tabela vendas
+    try {
+      await db.query('ALTER TABLE vendas ADD COLUMN cliente_id INT NULL');
+      console.log('Coluna cliente_id adicionada a tabela vendas.');
+    } catch (e) {}
+
 
     // Try to alter the usuario table to add missing columns from previous schema versions
     try {

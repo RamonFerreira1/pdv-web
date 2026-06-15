@@ -297,7 +297,7 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
                     {f.label} {f.required && <span className="text-red-400">*</span>}
                   </label>
                   <input
-                    type={f.type || 'text'}
+                    type={f.name.toLowerCase() === 'email' ? 'email' : (f.type || 'text')}
                     value={formData[f.name] || ''}
                     onChange={(e) => handleInputChange(f, e.target.value)}
                     required={f.required}
