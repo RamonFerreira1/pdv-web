@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useToast } from './AvisoContext';
+import { AutenticacaoContext } from './AutenticacaoContext';
 
 export const PDVContext = createContext();
 
@@ -21,14 +22,16 @@ const initialSellers = [
 
 export const PDVProvider = ({ children }) => {
   const { mostrarAviso } = useToast();
+  const { usuario } = useContext(AutenticacaoContext);
   const [produtos, setProducts] = useState([]);
   const [carrinho, setCart] = useState({});
   const [vendas, setSales] = useState([]);
   const [sellers, setSellers] = useState(initialSellers);
   const [cancellations, setCancellations] = useState(0);
 
-  // Carregar produtos do banco de dados na inicialização
+  // Carregar produtos após login (evita 401 antes da autenticação)
   useEffect(() => {
+    if (!usuario) return; // Só busca se estiver logado
     const fetchProducts = async () => {
       try {
         const response = await fetch(`${API_URL}/produtos`, {
@@ -43,7 +46,7 @@ export const PDVProvider = ({ children }) => {
       }
     };
     fetchProducts();
-  }, []);
+  }, [usuario]); // Recarrega quando o usuário muda (login/logout)
 
   // Cart Functions
   const carrinhoItens = Object.values(carrinho);
@@ -105,8 +108,11 @@ export const PDVProvider = ({ children }) => {
         throw new Error('Falha ao registrar venda');
       }
 
+      const responseData = await response.json();
+      const vendaId = responseData.vendaId;
+
       const newSale = {
-        id: Date.now(),
+        id: vendaId || Date.now(),
         date: new Date().toISOString(),
         total: totalComDesconto,
         method,
@@ -128,9 +134,11 @@ export const PDVProvider = ({ children }) => {
       
       limparCarrinho();
       mostrarAviso('Venda registrada com sucesso!', 'success');
+      return vendaId; // Retorna o ID real da venda para o recibo
     } catch (error) {
       console.error("Erro ao finalizar a venda no banco:", error);
       mostrarAviso('Erro ao registrar a venda. Tente novamente.', 'error');
+      return null;
     }
   };
   

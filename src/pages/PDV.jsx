@@ -389,8 +389,14 @@ export default function PDV() {
               <div className="flex justify-between text-slate-400 text-sm mb-1">
                 <span>Subtotal</span><span>{fmt(precoTotal)}</span>
               </div>
+              {parseFloat(desconto) > 0 && (
+                <div className="flex justify-between text-amber-400 text-sm mb-1">
+                  <span>Desconto</span>
+                  <span>- {fmt(parseFloat(desconto))}</span>
+                </div>
+              )}
               <div className="flex justify-between text-white font-bold text-lg mb-4">
-                <span>Total</span><span className="text-primaryGreen">{fmt(precoTotal)}</span>
+                <span>Total</span><span className="text-primaryGreen">{fmt(Math.max(0, precoTotal - (parseFloat(desconto) || 0)))}</span>
               </div>
               <button
                 className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${

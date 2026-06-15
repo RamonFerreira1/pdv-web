@@ -43,7 +43,6 @@ export default function Aniversariantes() {
   });
 
   const hoje = new Date();
-  const hojeStr = `${String(hoje.getDate()).padStart(2, '0')}/${String(hoje.getMonth() + 1).padStart(2, '0')}`;
 
   const aniversariantesHoje = aniversariantes.filter(c => {
     if (!c.data_nascimento) return false;

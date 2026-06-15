@@ -192,6 +192,35 @@ export default function CaixaDashboard() {
             </button>
           </div>
 
+          {/* Movimentos do Turno (Sangrias e Suprimentos) */}
+          {resumo.movimentos && resumo.movimentos.length > 0 && (
+            <div className="bg-darkCard border border-darkBorder rounded-2xl p-6 mb-8">
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <DollarSign className="text-slate-400" size={20} />
+                Movimentos do Turno
+              </h2>
+              <div className="space-y-3">
+                {resumo.movimentos.map((mov, i) => (
+                  <div
+                    key={i}
+                    className={`flex items-center justify-between p-4 rounded-xl border ${
+                      mov.tipo === 'Sangria'
+                        ? 'bg-red-500/5 border-red-500/20'
+                        : 'bg-blue-500/5 border-blue-500/20'
+                    }`}
+                  >
+                    <span className={`font-semibold ${mov.tipo === 'Sangria' ? 'text-red-400' : 'text-blue-400'}`}>
+                      {mov.tipo}
+                    </span>
+                    <span className={`font-bold text-lg ${mov.tipo === 'Sangria' ? 'text-red-400' : 'text-blue-400'}`}>
+                      {fmt(mov.total)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="bg-darkCard border border-darkBorder rounded-2xl p-8">
             <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
               <AlertTriangle className="text-yellow-500" /> Fechamento de Caixa

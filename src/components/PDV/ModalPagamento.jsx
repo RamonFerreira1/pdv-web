@@ -71,8 +71,9 @@ export default function ModalPagamento({ isOpen, onClose, desconto = 0, clienteI
 
   const handleFinalizar = async () => {
     setFinalizando(true);
-    await finalizarVenda(metodo, valorNum, troco, desconto, clienteId);
+    const realVendaId = await finalizarVenda(metodo, valorNum, troco, desconto, clienteId);
     setFinalizando(false);
+    if (realVendaId) setNumeroVenda(realVendaId); // Usa ID real do banco
     setSucesso(true);
   };
 
@@ -249,7 +250,7 @@ export default function ModalPagamento({ isOpen, onClose, desconto = 0, clienteI
                 </h3>
                 <p className="text-slate-400">
                   {metodo === 'pix' && 'Aguardando confirmação do Pix...'}
-                  {(metodo === 'credito' || metodo === 'debito') && 'Insira ou aproxime o carrinhoão na maquininha.'}
+                  {(metodo === 'credito' || metodo === 'debito') && 'Insira ou aproxime o cartão na maquininha.'}
                 </p>
               </div>
             ) : (

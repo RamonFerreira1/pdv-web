@@ -66,7 +66,7 @@ export default function Fiados() {
     }
   };
 
-  const filtered = fiados.filter(f => f.cliente_nome.toLowerCase().includes(busca.toLowerCase()));
+  const filtered = fiados.filter(f => (f.cliente_nome || '').toLowerCase().includes(busca.toLowerCase()));
   const totalDevido = fiados.reduce((acc, f) => acc + parseFloat(f.valor_devido), 0);
 
   return (

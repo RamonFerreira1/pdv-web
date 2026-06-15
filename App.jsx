@@ -74,7 +74,13 @@ export default function App() {
             <Route path="clientes" element={
               <DynamicCrudPage 
                 title="Gestão de Clientes" endpoint="clientes"
-                fields={[ { name: 'nome', label: 'Nome' }, { name: 'telefone', label: 'Telefone' }, { name: 'documento', label: 'CPF/CNPJ' } ]} 
+                fields={[ 
+                  { name: 'nome', label: 'Nome' }, 
+                  { name: 'telefone', label: 'Telefone' }, 
+                  { name: 'email', label: 'E-mail' },
+                  { name: 'documento', label: 'CPF/CNPJ' },
+                  { name: 'data_nascimento', label: 'Data de Nascimento', type: 'date' }
+                ]} 
               />
             } />
             
