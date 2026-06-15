@@ -67,7 +67,7 @@ export default function App() {
             <Route path="categorias" element={
               <DynamicCrudPage 
                 title="Categorias" endpoint="categorias"
-                fields={[ { name: 'nome', label: 'Nome' }, { name: 'descricao', label: 'Descrição' } ]} 
+                fields={[ { name: 'nome', label: 'Nome', required: true }, { name: 'descricao', label: 'Descrição' } ]} 
               />
             } />
             
@@ -75,7 +75,7 @@ export default function App() {
               <DynamicCrudPage 
                 title="Gestão de Clientes" endpoint="clientes"
                 fields={[ 
-                  { name: 'nome', label: 'Nome' }, 
+                  { name: 'nome', label: 'Nome', required: true }, 
                   { name: 'telefone', label: 'Telefone' }, 
                   { name: 'email', label: 'E-mail' },
                   { name: 'documento', label: 'CPF/CNPJ' },
@@ -87,14 +87,14 @@ export default function App() {
             <Route path="fornecedores" element={
               <DynamicCrudPage 
                 title="Fornecedores" endpoint="fornecedores"
-                fields={[ { name: 'razao_social', label: 'Razão Social' }, { name: 'cnpj', label: 'CNPJ' }, { name: 'telefone', label: 'Telefone' } ]} 
+                fields={[ { name: 'razao_social', label: 'Razão Social', required: true }, { name: 'cnpj', label: 'CNPJ' }, { name: 'telefone', label: 'Telefone' } ]} 
               />
             } />
             
             <Route path="vendedores" element={
               <DynamicCrudPage 
                 title="Vendedores" endpoint="vendedores"
-                fields={[ { name: 'nome', label: 'Nome do Vendedor' }, { name: 'comissao', label: 'Comissão (%)', type: 'number' } ]} 
+                fields={[ { name: 'nome', label: 'Nome do Vendedor', required: true }, { name: 'comissao', label: 'Comissão (%)', type: 'number' } ]} 
               />
             } />
 
@@ -105,14 +105,14 @@ export default function App() {
             <Route path="pedidos" element={
               <DynamicCrudPage 
                 title="Pedidos em Aberto" endpoint="pedidos"
-                fields={[ { name: 'cliente_id', label: 'ID do Cliente', type: 'number' }, { name: 'status', label: 'Status' }, { name: 'total', label: 'Total', type: 'number' } ]} 
+                fields={[ { name: 'cliente_id', label: 'ID do Cliente', type: 'number', required: true }, { name: 'status', label: 'Status' }, { name: 'total', label: 'Total', type: 'number', required: true } ]} 
               />
             } />
 
             <Route path="devolucoes" element={
               <DynamicCrudPage 
                 title="Devoluções" endpoint="devolucoes"
-                fields={[ { name: 'venda_id', label: 'Nº da Venda', type: 'number' }, { name: 'motivo', label: 'Motivo' }, { name: 'valor_devolvido', label: 'Valor Devolvido', type: 'number' } ]} 
+                fields={[ { name: 'venda_id', label: 'Nº da Venda', type: 'number', required: true }, { name: 'motivo', label: 'Motivo', required: true }, { name: 'valor_devolvido', label: 'Valor Devolvido', type: 'number', required: true } ]} 
               />
             } />
 
@@ -123,7 +123,7 @@ export default function App() {
             <Route path="financeiro" element={
               <DynamicCrudPage 
                 title="Contas a Pagar/Receber" endpoint="financeiro"
-                fields={[ { name: 'tipo', label: 'Tipo (Pagar/Receber)' }, { name: 'descricao', label: 'Descrição' }, { name: 'valor', label: 'Valor', type: 'number' }, { name: 'status', label: 'Status' } ]} 
+                fields={[ { name: 'tipo', label: 'Tipo (Pagar/Receber)', required: true }, { name: 'descricao', label: 'Descrição', required: true }, { name: 'valor', label: 'Valor', type: 'number', required: true }, { name: 'status', label: 'Status' } ]} 
               />
             } />
 

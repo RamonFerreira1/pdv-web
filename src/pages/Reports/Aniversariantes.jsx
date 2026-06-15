@@ -37,7 +37,8 @@ export default function Aniversariantes() {
   // Filtra clientes com data de nascimento no mês selecionado
   const aniversariantes = clientes.filter(c => {
     if (!c.data_nascimento) return false;
-    const mes = new Date(c.data_nascimento + 'T00:00:00').getMonth() + 1;
+    const nascStr = String(c.data_nascimento).substring(0, 10);
+    const mes = new Date(nascStr + 'T12:00:00').getMonth() + 1;
     const nomeMatch = c.nome?.toLowerCase().includes(busca.toLowerCase());
     return mes === mesSelecionado && nomeMatch;
   });
@@ -46,13 +47,15 @@ export default function Aniversariantes() {
 
   const aniversariantesHoje = aniversariantes.filter(c => {
     if (!c.data_nascimento) return false;
-    const d = new Date(c.data_nascimento + 'T00:00:00');
+    const nascStr = String(c.data_nascimento).substring(0, 10);
+    const d = new Date(nascStr + 'T12:00:00');
     return d.getDate() === hoje.getDate() && d.getMonth() + 1 === hoje.getMonth() + 1;
   });
 
   const getIdade = (dataNasc) => {
     if (!dataNasc) return null;
-    const nasc = new Date(dataNasc + 'T00:00:00');
+    const nascStr = String(dataNasc).substring(0, 10);
+    const nasc = new Date(nascStr + 'T12:00:00');
     const age = hoje.getFullYear() - nasc.getFullYear();
     const m = hoje.getMonth() - nasc.getMonth();
     return m < 0 || (m === 0 && hoje.getDate() < nasc.getDate()) ? age - 1 : age;
@@ -60,7 +63,8 @@ export default function Aniversariantes() {
 
   const getDia = (dataNasc) => {
     if (!dataNasc) return '';
-    return new Date(dataNasc + 'T00:00:00').getDate();
+    const nascStr = String(dataNasc).substring(0, 10);
+    return new Date(nascStr + 'T12:00:00').getDate();
   };
 
   return (

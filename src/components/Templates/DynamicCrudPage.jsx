@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Edit2, Trash2, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react';
+import { useToast } from '../../context/AvisoContext';
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/dynamic`;
 
@@ -14,6 +15,7 @@ const getAuthHeaders = () => {
 
 export default function DynamicCrudPage({ title, endpoint, fields }) {
   const navigate = useNavigate();
+  const { mostrarAviso } = useToast();
   const [data, setData] = useState([]);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,6 +59,14 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
   };
 
   const handleSave = async () => {
+    // Validação
+    for (const f of fields) {
+      if (f.required && (!formData[f.name] || String(formData[f.name]).trim() === '')) {
+        mostrarAviso(`O campo ${f.label} é obrigatório.`, 'error');
+        return;
+      }
+    }
+
     try {
       const method = editingId ? 'PUT' : 'POST';
       const url = editingId ? `${API_URL}/${endpoint}/${editingId}` : `${API_URL}/${endpoint}`;
@@ -68,9 +78,13 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
       if (res.ok) {
         setIsModalOpen(false);
         fetchData();
+        mostrarAviso(`Registro ${editingId ? 'atualizado' : 'criado'} com sucesso!`, 'success');
+      } else {
+        mostrarAviso('Erro ao salvar o registro.', 'error');
       }
     } catch (e) {
       console.error(e);
+      mostrarAviso('Erro de conexão ao salvar.', 'error');
     }
   };
 
@@ -253,11 +267,14 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
             <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
               {fields.map(f => (
                 <div key={f.name}>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">{f.label}</label>
+                  <label className="block text-sm font-medium text-slate-400 mb-1">
+                    {f.label} {f.required && <span className="text-red-400">*</span>}
+                  </label>
                   <input
                     type={f.type || 'text'}
                     value={formData[f.name] || ''}
                     onChange={(e) => setFormData({ ...formData, [f.name]: e.target.value })}
+                    required={f.required}
                     className="w-full bg-darkBg border border-darkBorder rounded-xl px-4 py-2.5 text-white focus:border-primaryGreen transition-colors outline-none"
                   />
                 </div>
