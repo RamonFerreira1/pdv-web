@@ -110,19 +110,19 @@ export default function ModalPagamento({ isOpen, onClose, desconto = 0, clienteI
 
   const handleWhatsApp = () => {
     let text = `*SMART PDV - RECIBO DE VENDA*\n`;
-    text += `Cupom: #${String(numeroVenda).padStart(6, '0')}\n`;
-    text += `Data: ${new Date().toLocaleString('pt-BR')}\n\n`;
+    text += `Cupom: #${String(saleDetails?.numeroVenda || numeroVenda).padStart(6, '0')}\n`;
+    text += `Data: ${new Date(saleDetails?.data || new Date()).toLocaleString('pt-BR')}\n\n`;
     text += `*ITENS:*\n`;
-    carrinhoItens.forEach(item => {
+    (saleDetails?.items || carrinhoItens).forEach(item => {
       text += `${item.qty}x ${item.name} - ${fmt(item.price * item.qty)}\n`;
     });
     text += `\n`;
-    if (desconto > 0) {
-      text += `Subtotal: ${fmt(precoTotal)}\n`;
-      text += `Desconto: -${fmt(desconto)}\n`;
+    if ((saleDetails?.desconto || desconto) > 0) {
+      text += `Subtotal: ${fmt(saleDetails?.subtotal || precoTotal)}\n`;
+      text += `Desconto: -${fmt(saleDetails?.desconto || desconto)}\n`;
     }
-    text += `*TOTAL: ${fmt(totalComDesconto)}*\n`;
-    text += `Pagamento: ${METODOS.find((m) => m.id === metodo)?.label}\n\n`;
+    text += `*TOTAL: ${fmt(saleDetails?.total || totalComDesconto)}*\n`;
+    text += `Pagamento: ${saleDetails?.metodo || METODOS.find((m) => m.id === metodo)?.label}\n\n`;
     text += `Obrigado pela preferência!`;
 
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
@@ -134,14 +134,14 @@ export default function ModalPagamento({ isOpen, onClose, desconto = 0, clienteI
         <div className="bg-darkCard w-full max-w-md rounded-2xl p-8 flex flex-col items-center border border-darkBorder shadow-2xl">
           <CheckCircle className="text-primaryGreen w-20 h-20 mb-6" />
           <h2 className="text-2xl font-bold text-white mb-2">Venda finalizada!</h2>
-          <p className="text-slate-400 font-mono mb-6">VENDA #{String(numeroVenda).padStart(4, '0')}</p>
+          <p className="text-slate-400 font-mono mb-6">VENDA #{String(saleDetails?.numeroVenda || numeroVenda).padStart(4, '0')}</p>
           
           <div className="text-4xl font-bold text-white mb-6">
-            {fmt(totalComDesconto)}
-            {desconto > 0 && (
+            {fmt(saleDetails?.total || totalComDesconto)}
+            {(saleDetails?.desconto || desconto) > 0 && (
               <div className="text-sm font-normal text-slate-400 mt-1 text-center">
-                <span className="line-through text-slate-500">{fmt(precoTotal)}</span>
-                <span className="text-amber-400 ml-2">- {fmt(desconto)} desconto</span>
+                <span className="line-through text-slate-500">{fmt(saleDetails?.subtotal || precoTotal)}</span>
+                <span className="text-amber-400 ml-2">- {fmt(saleDetails?.desconto || desconto)} desconto</span>
               </div>
             )}
           </div>
