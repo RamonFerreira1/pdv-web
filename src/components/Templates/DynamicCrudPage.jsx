@@ -110,8 +110,18 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
   };
 
   const formatValue = (field, value) => {
+    if (!value) return '—';
     if (field.type === 'number') return `R$ ${parseFloat(value || 0).toFixed(2)}`;
-    return value || '—';
+    if (field.type === 'date') {
+      try {
+        const dateStr = value.substring(0, 10);
+        const [year, month, day] = dateStr.split('-');
+        return `${day}/${month}/${year}`;
+      } catch (e) {
+        return value;
+      }
+    }
+    return value;
   };
 
   const primaryField = fields[0];
