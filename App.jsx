@@ -18,6 +18,9 @@ import Fiados from './src/pages/Gestao/Fiados';
 import DynamicCrudPage from './src/components/Templates/DynamicCrudPage';
 import GenericReport from './src/components/Templates/GenericReport';
 import VendasPorProduto from './src/pages/Reports/VendasPorProduto';
+import VendasPorServico from './src/pages/Reports/VendasPorServico';
+import RelatorioConsolidado from './src/pages/Reports/RelatorioConsolidado';
+import Aniversariantes from './src/pages/Reports/Aniversariantes';
 import Comissoes from './src/pages/Reports/Comissoes';
 import CaixaDashboard from './src/pages/Gestao/CaixaDashboard';
 import Login from './src/pages/Login';
@@ -119,19 +122,21 @@ export default function App() {
             } />
 
             {/* ==================================================== */}
-            {/* RELATÓRIOS FALTANTES */}
+            {/* RELATÓRIOS IMPLEMENTADOS */}
             {/* ==================================================== */}
             
             <Route path="relatorios-totalizado" element={<Relatorios />} />
-            <Route path="relatorios-consolidados" element={<GenericReport title="Relatórios Consolidados" />} />
-            {/* Novas Rotas de Relatórios Reais */}
+            <Route path="relatorios-consolidados" element={<RelatorioConsolidado />} />
+            {/* Rotas de Relatórios por produto/serviço */}
             <Route path="relatorios/produtos" element={<VendasPorProduto />} />
             <Route path="relatorios/comissoes" element={<Comissoes />} />
             <Route path="fiados" element={<Fiados />} />
 
-            {/* Telas ainda em Construção */}
-            <Route path="relatorios/servicos" element={<GenericReport title="Vendas por Serviço" />} />
-            <Route path="relatorios/aniversariantes" element={<GenericReport title="Aniversariantes" />} />
+            {/* Rotas do menu de relatórios (paths usados pelo RelatoriosMenu) */}
+            <Route path="vendas-produto" element={<VendasPorProduto />} />
+            <Route path="vendas-servico" element={<VendasPorServico />} />
+            <Route path="comissoes" element={<Comissoes />} />
+            <Route path="aniversarios" element={<Aniversariantes />} />
             
             {/* Opcionais não requeridos ativamente com API, apenas Mock UI */}
             <Route path="combos" element={<GenericReport title="Gestão de Combos (Premium)" />} />
