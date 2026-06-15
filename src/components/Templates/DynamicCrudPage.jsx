@@ -116,6 +116,22 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
 
   const primaryField = fields[0];
 
+  const handleInputChange = (field, value) => {
+    let sanitizedValue = value;
+
+    // Remover números de campos de nome/razão social
+    if (field.name === 'nome' || field.name === 'razao_social') {
+      sanitizedValue = value.replace(/[0-9]/g, '');
+    }
+
+    // Remover letras de campos de telefone e documentos
+    if (field.name === 'telefone' || field.name === 'cnpj' || field.name === 'documento') {
+      sanitizedValue = value.replace(/[A-Za-z]/g, '');
+    }
+
+    setFormData({ ...formData, [field.name]: sanitizedValue });
+  };
+
   return (
     <div className="flex flex-col h-full bg-darkBg">
       {/* Topbar */}
@@ -273,7 +289,7 @@ export default function DynamicCrudPage({ title, endpoint, fields }) {
                   <input
                     type={f.type || 'text'}
                     value={formData[f.name] || ''}
-                    onChange={(e) => setFormData({ ...formData, [f.name]: e.target.value })}
+                    onChange={(e) => handleInputChange(f, e.target.value)}
                     required={f.required}
                     className="w-full bg-darkBg border border-darkBorder rounded-xl px-4 py-2.5 text-white focus:border-primaryGreen transition-colors outline-none"
                   />
