@@ -93,14 +93,14 @@ app.get('/api/produtos', authenticateToken, async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM item');
     
-    // Mapeando para o formato que o frontend espera (adicionando campos mockados que não tem no banco)
+    // Mapeando para o formato que o frontend espera
     const produtosFormatados = rows.map(row => ({
       id: row.ID,
       name: row.nome,
       price: parseFloat(row.preco),
       stock: row.estoque,
       codigo_barras: row.codigo_barras || null, // necessário para o leitor de código de barras
-      category: "Diversos", // Campo fixo pois não existe no banco
+      category: row.categoria || "Diversos", // Campo vindo do banco
       icon: "📦" // Ícone padrão
     }));
     
@@ -113,11 +113,11 @@ app.get('/api/produtos', authenticateToken, async (req, res) => {
 
 // Rota para adicionar produto
 app.post('/api/produtos', authenticateToken, async (req, res) => {
-  const { name, price, stock, codigo_barras } = req.body;
+  const { name, price, stock, codigo_barras, category } = req.body;
   try {
     const [result] = await db.query(
-      'INSERT INTO item (nome, preco, estoque, codigo_barras) VALUES (?, ?, ?, ?)',
-      [name, price, stock, codigo_barras || null]
+      'INSERT INTO item (nome, preco, estoque, codigo_barras, categoria) VALUES (?, ?, ?, ?, ?)',
+      [name, price, stock, codigo_barras || null, category || 'Diversos']
     );
     res.status(201).json({ id: result.insertId, name, price, stock });
   } catch (error) {
@@ -132,8 +132,8 @@ app.put('/api/produtos/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
     await db.query(
-      'UPDATE item SET nome = ?, preco = ?, estoque = ?, codigo_barras = ? WHERE ID = ?',
-      [name, price, stock, codigo_barras || null, id]
+      'UPDATE item SET nome = ?, preco = ?, estoque = ?, codigo_barras = ?, categoria = ? WHERE ID = ?',
+      [name, price, stock, codigo_barras || null, category || 'Diversos', id]
     );
     res.json({ message: 'Produto atualizado' });
   } catch (error) {
@@ -179,7 +179,7 @@ app.post('/api/vendas', authenticateToken, async (req, res) => {
 
       // Descontar do estoque (somente se não for serviço/ilimitado)
       await db.query(
-        'UPDATE item SET estoque = GREATEST(0, estoque - ?) WHERE ID = ?',
+        'UPDATE item SET estoque = GREATEST(0, estoque - ?) WHERE ID = ? AND estoque != 999',
         [item.qty, item.id]
       );
     }

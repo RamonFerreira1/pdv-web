@@ -105,10 +105,16 @@ async function initializeDb() {
       await db.query(query);
     }
     
-    // Try to alter the table if the column doesn't exist (ignores error if it does)
     try {
       await db.query('ALTER TABLE item ADD COLUMN codigo_barras VARCHAR(100) NULL');
       console.log('Coluna codigo_barras adicionada a tabela item.');
+    } catch (e) {
+      // Ignore
+    }
+
+    try {
+      await db.query("ALTER TABLE item ADD COLUMN categoria VARCHAR(255) DEFAULT 'Diversos'");
+      console.log('Coluna categoria adicionada a tabela item.');
     } catch (e) {
       // Ignore
     }

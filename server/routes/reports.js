@@ -28,6 +28,11 @@ router.get('/vendas-produto', authenticateToken, async (req, res) => {
 // Relatório: Comissões de Vendedores
 router.get('/comissoes', authenticateToken, async (req, res) => {
   try {
+    const { inicio, fim } = req.query;
+    const dateCond = (inicio && fim) 
+      ? `WHERE DATE(v.data_venda) >= '${inicio}' AND DATE(v.data_venda) <= '${fim}'`
+      : '';
+      
     // Busca as vendas agrupadas por usuário
     const query = `
       SELECT 
@@ -38,6 +43,7 @@ router.get('/comissoes', authenticateToken, async (req, res) => {
         COUNT(v.ID) as qtd_vendas
       FROM vendas v
       JOIN usuario u ON v.usuario_id = u.ID
+      ${dateCond}
       GROUP BY u.ID, u.nome, u.sobrenome
       ORDER BY total_vendido DESC
     `;
@@ -56,23 +62,33 @@ router.get('/comissoes', authenticateToken, async (req, res) => {
 // Relatório: Dashboard (métricas do dia)
 router.get('/dashboard', authenticateToken, async (req, res) => {
   try {
-    // Vendas de hoje
+    const { inicio, fim } = req.query;
+    
+    const dataHojeCond = (inicio && fim) 
+      ? `DATE(data_venda) >= '${inicio}' AND DATE(data_venda) <= '${fim}'`
+      : `DATE(data_venda) = CURDATE()`;
+      
+    const dataMesCond = (inicio && fim)
+      ? `DATE(data_venda) >= '${inicio}' AND DATE(data_venda) <= '${fim}'`
+      : `MONTH(data_venda) = MONTH(CURDATE()) AND YEAR(data_venda) = YEAR(CURDATE())`;
+
+    // Vendas de hoje (ou do período selecionado)
     const [vendasHoje] = await db.query(`
       SELECT COUNT(*) as qtd, COALESCE(SUM(total), 0) as total
       FROM vendas
-      WHERE DATE(data_venda) = CURDATE()
+      WHERE ${dataHojeCond}
     `);
 
-    // Ticket médio hoje
+    // Ticket médio
     const ticketMedio = vendasHoje[0].qtd > 0
       ? vendasHoje[0].total / vendasHoje[0].qtd
       : 0;
 
-    // Total do mês
+    // Total do mês (ou do período)
     const [vendasMes] = await db.query(`
       SELECT COALESCE(SUM(total), 0) as total, COUNT(*) as qtd
       FROM vendas
-      WHERE MONTH(data_venda) = MONTH(CURDATE()) AND YEAR(data_venda) = YEAR(CURDATE())
+      WHERE ${dataMesCond}
     `);
 
     // Top 5 produtos mais vendidos
