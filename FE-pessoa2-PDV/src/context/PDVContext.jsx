@@ -1,0 +1,208 @@
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useToast } from './AvisoContext';
+
+export const PDVContext = createContext();
+
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`;
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('pdv_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+};
+
+const initialSellers = [
+  { id: 1, name: "Robertinho", salesTotal: 1500 },
+  { id: 2, name: "Maria", salesTotal: 2300 },
+  { id: 3, name: "João", salesTotal: 800 },
+];
+
+export const PDVProvider = ({ children }) => {
+  const { mostrarAviso } = useToast();
+  const [produtos, setProducts] = useState([]);
+  const [carrinho, setCart] = useState({});
+  const [vendas, setSales] = useState([]);
+  const [sellers, setSellers] = useState(initialSellers);
+  const [cancellations, setCancellations] = useState(0);
+
+  // Carregar produtos do banco de dados na inicialização
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(`${API_URL}/produtos`, {
+          headers: getAuthHeaders()
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setProducts(data);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar produtos do banco:", error);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  // Cart Functions
+  const carrinhoItens = Object.values(carrinho);
+  const totalQty = carrinhoItens.reduce((s, i) => s + i.qty, 0);
+  const precoTotal = carrinhoItens.reduce((s, i) => s + i.price * i.qty, 0);
+
+  const adicionarAoCarrinho = (product) => {
+    setCart((prev) => ({
+      ...prev,
+      [product.id]: prev[product.id]
+        ? { ...prev[product.id], qty: prev[product.id].qty + 1 }
+        : { ...product, qty: 1 },
+    }));
+  };
+
+  const incQty = (id) => {
+    setCart((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], qty: prev[id].qty + 1 },
+    }));
+  };
+
+  const decQty = (id) => {
+    setCart((prev) => {
+      const next = { ...prev };
+      if (next[id].qty <= 1) delete next[id];
+      else next[id] = { ...next[id], qty: next[id].qty - 1 };
+      return next;
+    });
+  };
+
+  const removeItem = (id) => {
+    setCart((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  };
+
+  const limparCarrinho = () => setCart({});
+
+  const finalizarVenda = async (method, received, change, desconto = 0, clienteId = null) => {
+    const totalComDesconto = Math.max(0, precoTotal - desconto);
+    try {
+      // Registrar no banco de dados via API
+      const response = await fetch(`${API_URL}/vendas`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          total: totalComDesconto,
+          desconto: desconto || 0,
+          cliente_id: clienteId || null,
+          metodo_pagamento: method,
+          items: carrinhoItens.map(item => ({ id: item.id, qty: item.qty, price: item.price }))
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao registrar venda');
+      }
+
+      const newSale = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        total: totalComDesconto,
+        method,
+        items: carrinhoItens,
+      };
+      
+      // Decrease stock locally
+      const nextProducts = produtos.map(p => {
+        const cartItem = carrinho[p.id];
+        if (cartItem && p.stock !== 999) { // 999 for services
+          return { ...p, stock: Math.max(0, p.stock - cartItem.qty) };
+        }
+        return p;
+      });
+      setProducts(nextProducts);
+
+      // Add sale
+      setSales(prev => [...prev, newSale]);
+      
+      limparCarrinho();
+      mostrarAviso('Venda registrada com sucesso!', 'success');
+    } catch (error) {
+      console.error("Erro ao finalizar a venda no banco:", error);
+      mostrarAviso('Erro ao registrar a venda. Tente novamente.', 'error');
+    }
+  };
+  
+  // Product Functions (with API calls)
+  const addProduct = async (product) => {
+    try {
+      const response = await fetch(`${API_URL}/produtos`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(product)
+      });
+      if (response.ok) {
+        const newProd = await response.json();
+        setProducts(prev => [...prev, { ...product, id: newProd.id, icon: product.icon || "📦" }]);
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar produto:", error);
+    }
+  };
+  
+  const updateProduct = async (id, updatedFields) => {
+    try {
+      const response = await fetch(`${API_URL}/produtos/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updatedFields)
+      });
+      if (response.ok) {
+        setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updatedFields } : p));
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar produto:", error);
+    }
+  };
+  
+  const deleteProduct = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/produtos/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      if (response.ok) {
+        setProducts(prev => prev.filter(p => p.id !== id));
+      }
+    } catch (error) {
+      console.error("Erro ao deletar produto:", error);
+    }
+  };
+
+  return (
+    <PDVContext.Provider
+      value={{
+        produtos,
+        carrinho,
+        carrinhoItens,
+        totalQty,
+        precoTotal,
+        vendas,
+        sellers,
+        cancellations,
+        adicionarAoCarrinho,
+        incQty,
+        decQty,
+        removeItem,
+        limparCarrinho,
+        finalizarVenda,
+        addProduct,
+        updateProduct,
+        deleteProduct
+      }}
+    >
+      {children}
+    </PDVContext.Provider>
+  );
+};
