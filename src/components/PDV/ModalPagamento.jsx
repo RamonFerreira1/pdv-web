@@ -47,6 +47,7 @@ export default function ModalPagamento({ isOpen, onClose, desconto = 0, clienteI
   
   const [metodo, setMetodo] = useState(null);
   const [valorRecebido, setValorRecebido] = useState('');
+  const [finalSaleDetails, setFinalSaleDetails] = useState(null);
   const [sucesso, setSucesso] = useState(false);
   const [numeroVenda, setNumeroVenda] = useState(0);
   const [finalizando, setFinalizando] = useState(false);
@@ -56,6 +57,7 @@ export default function ModalPagamento({ isOpen, onClose, desconto = 0, clienteI
       setMetodo(null);
       setValorRecebido('');
       setSucesso(false);
+      setFinalSaleDetails(null);
       setNumeroVenda(Math.floor(Math.random() * 9000) + 1000);
     }
   }, [isOpen]);
@@ -68,12 +70,31 @@ export default function ModalPagamento({ isOpen, onClose, desconto = 0, clienteI
     (metodo !== 'dinheiro' || valorNum >= totalComDesconto) &&
     (metodo !== 'fiado' || clienteId !== null);
 
-
   const handleFinalizar = async () => {
     setFinalizando(true);
+
+    // Salvar os detalhes ANTES de finalizar a venda para não zerar quando o carrinho for limpo
+    const capturedDetails = {
+      items: [...carrinhoItens],
+      subtotal: precoTotal,
+      desconto: desconto || 0,
+      total: totalComDesconto,
+      troco: Math.max(troco, 0),
+      metodo: METODOS.find((m) => m.id === metodo)?.label,
+      data: new Date().toISOString()
+    };
+
     const realVendaId = await finalizarVenda(metodo, valorNum, troco, desconto, clienteId);
     setFinalizando(false);
-    if (realVendaId) setNumeroVenda(realVendaId); // Usa ID real do banco
+    
+    if (realVendaId) {
+      setNumeroVenda(realVendaId);
+      capturedDetails.numeroVenda = realVendaId;
+    } else {
+      capturedDetails.numeroVenda = numeroVenda;
+    }
+    
+    setFinalSaleDetails(capturedDetails);
     setSucesso(true);
   };
 
@@ -85,16 +106,7 @@ export default function ModalPagamento({ isOpen, onClose, desconto = 0, clienteI
     window.print();
   };
 
-  const saleDetails = sucesso ? {
-    items: carrinhoItens,
-    subtotal: precoTotal,
-    desconto: desconto || 0,
-    total: totalComDesconto,
-    troco: Math.max(troco, 0),
-    metodo: METODOS.find((m) => m.id === metodo)?.label,
-    numeroVenda: numeroVenda,
-    data: new Date().toISOString()
-  } : null;
+  const saleDetails = finalSaleDetails;
 
   const handleWhatsApp = () => {
     let text = `*SMART PDV - RECIBO DE VENDA*\n`;
