@@ -91,7 +91,7 @@ app.delete('/api/clientes/:id', authenticateToken, async (req, res) => {
 // Rota para buscar todos os produtos
 app.get('/api/produtos', authenticateToken, async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM item');
+    const [rows] = await db.query('SELECT * FROM item WHERE ativo = true OR ativo IS NULL');
     
     // Mapeando para o formato que o frontend espera
     const produtosFormatados = rows.map(row => ({
@@ -142,11 +142,11 @@ app.put('/api/produtos/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Rota para deletar produto
+// Rota para deletar produto (Soft Delete)
 app.delete('/api/produtos/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
-    await db.query('DELETE FROM item WHERE ID = ?', [id]);
+    await db.query('UPDATE item SET ativo = false WHERE ID = ?', [id]);
     res.json({ message: 'Produto excluído' });
   } catch (error) {
     console.error(error);
@@ -156,17 +156,17 @@ app.delete('/api/produtos/:id', authenticateToken, async (req, res) => {
 
 // Rota para salvar uma venda
 app.post('/api/vendas', authenticateToken, async (req, res) => {
-  const { total, items } = req.body; // frontend envia "items" com qty e price
+  const { total, items, metodo_pagamento } = req.body; // frontend envia metodo_pagamento
   const usuarioId = req.usuario.id; // Pegar ID do usuário logado via JWT
   
   try {
     // Iniciar uma transação
     await db.query('START TRANSACTION');
 
-    // Inserir a venda com o usuário real
+    // Inserir a venda com o usuário real e método de pagamento
     const [vendaResult] = await db.query(
-      'INSERT INTO vendas (total, usuario_id) VALUES (?, ?)',
-      [total, usuarioId] 
+      'INSERT INTO vendas (total, usuario_id, metodo_pagamento) VALUES (?, ?, ?)',
+      [total, usuarioId, metodo_pagamento || 'dinheiro'] 
     );
     const vendaId = vendaResult.insertId;
 
@@ -204,7 +204,7 @@ app.post('/api/vendas', authenticateToken, async (req, res) => {
 // Rota para listar histórico de vendas
 app.get('/api/vendas', authenticateToken, async (req, res) => {
   try {
-    const [vendas] = await db.query('SELECT * FROM vendas ORDER BY data_venda DESC');
+    const [vendas] = await db.query('SELECT * FROM vendas ORDER BY data_venda DESC LIMIT 100');
     res.json(vendas);
   } catch (error) {
     console.error(error);
@@ -329,6 +329,13 @@ app.delete('/api/dynamic/:table/:id', authenticateToken, async (req, res) => {
   if (!allowedTables.includes(table)) return res.status(403).json({ error: 'Tabela não permitida' });
   
   try {
+    if (table === 'clientes') {
+      const [fiados] = await db.query('SELECT id FROM fiado WHERE cliente_id = ? AND valor_devido > 0', [id]);
+      if (fiados.length > 0) {
+        return res.status(400).json({ error: 'Não é possível excluir este cliente pois ele possui dívidas de fiado em aberto.' });
+      }
+    }
+
     await db.query(`DELETE FROM ${table} WHERE id = ?`, [id]);
     res.json({ message: 'Deletado com sucesso' });
   } catch (error) {

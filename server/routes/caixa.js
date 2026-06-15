@@ -40,13 +40,13 @@ router.post('/abrir', authenticateToken, async (req, res) => {
   }
 });
 
-// Registra sangria ou suprimento (vinculado ao turno, mas por hora usa a tabela caixa genérica)
+// Registra sangria ou suprimento
 router.post('/movimento', authenticateToken, async (req, res) => {
-  const { tipo, valor, descricao } = req.body;
+  const { tipo, valor, descricao, turno_id } = req.body;
   try {
     await db.query(
-      'INSERT INTO caixa (tipo, descricao, valor) VALUES (?, ?, ?)',
-      [tipo, descricao, valor]
+      'INSERT INTO caixa (tipo, descricao, valor, turno_id, usuario_id) VALUES (?, ?, ?, ?, ?)',
+      [tipo, descricao, valor, turno_id || null, req.usuario.id]
     );
     res.json({ success: true });
   } catch (error) {
@@ -80,20 +80,29 @@ router.get('/resumo/:turno_id', authenticateToken, async (req, res) => {
     const start = turnoInfo[0].data_abertura;
     const end = turnoInfo[0].data_fechamento || new Date(); // Até agora se tiver aberto
     
-    // Total de vendas
+    // Total de vendas agrupadas por método de pagamento
     const [vendas] = await db.query(
-      'SELECT SUM(total) as total_vendas FROM vendas WHERE usuario_id = ? AND data_venda >= ? AND data_venda <= ?',
+      'SELECT metodo_pagamento, SUM(total) as total_vendas FROM vendas WHERE usuario_id = ? AND data_venda >= ? AND data_venda <= ? GROUP BY metodo_pagamento',
       [req.usuario.id, start, end]
     );
     
-    // Entradas/Saidas (caixa) - assumindo q são todas desse turno p simplificar
+    // Entradas/Saidas (caixa) do turno atual
     const [movimentos] = await db.query(
-      'SELECT tipo, SUM(valor) as total FROM caixa WHERE data_movimento >= ? AND data_movimento <= ? GROUP BY tipo',
-      [start, end]
+      'SELECT tipo, SUM(valor) as total FROM caixa WHERE turno_id = ? GROUP BY tipo',
+      [turno_id]
     );
     
+    // Processar vendas para um formato fácil
+    const vendasPorMetodo = {};
+    let totalAbsoluto = 0;
+    vendas.forEach(v => {
+      vendasPorMetodo[v.metodo_pagamento || 'dinheiro'] = v.total_vendas;
+      totalAbsoluto += Number(v.total_vendas);
+    });
+
     res.json({
-      total_vendas: vendas[0].total_vendas || 0,
+      total_vendas: totalAbsoluto,
+      vendas_detalhadas: vendasPorMetodo,
       movimentos: movimentos
     });
   } catch (error) {

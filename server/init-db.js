@@ -127,6 +127,25 @@ async function initializeDb() {
       // Já existe, ignorar
     }
 
+    // Migração: adicionar metodo_pagamento na tabela vendas
+    try {
+      await db.query("ALTER TABLE vendas ADD COLUMN metodo_pagamento VARCHAR(50) DEFAULT 'dinheiro'");
+      console.log('Coluna metodo_pagamento adicionada a tabela vendas.');
+    } catch (e) {}
+
+    // Migração: adicionar turno_id e usuario_id na tabela caixa
+    try {
+      await db.query('ALTER TABLE caixa ADD COLUMN turno_id INT NULL');
+      await db.query('ALTER TABLE caixa ADD COLUMN usuario_id INT NULL');
+      console.log('Colunas turno_id e usuario_id adicionadas a tabela caixa.');
+    } catch (e) {}
+
+    // Migração: adicionar ativo na tabela item
+    try {
+      await db.query('ALTER TABLE item ADD COLUMN ativo BOOLEAN DEFAULT TRUE');
+      console.log('Coluna ativo adicionada a tabela item.');
+    } catch (e) {}
+
 
     // Try to alter the usuario table to add missing columns from previous schema versions
     try {

@@ -104,7 +104,7 @@ export default function CaixaDashboard() {
       const res = await fetch(`${API_URL}/movimento`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ tipo: modalAcao, valor: parseFloat(valorMovimento), descricao: descMovimento })
+        body: JSON.stringify({ tipo: modalAcao, valor: parseFloat(valorMovimento), descricao: descMovimento, turno_id: turno.id })
       });
       if (res.ok) {
         setModalAcao(null);
@@ -173,7 +173,7 @@ export default function CaixaDashboard() {
             </div>
             <div className="bg-darkCard border border-darkBorder rounded-2xl p-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-3"><Calculator className="text-slate-500 opacity-20" size={60} /></div>
-              <h3 className="text-slate-400 font-medium mb-1 relative z-10">Vendas no Turno</h3>
+              <h3 className="text-slate-400 font-medium mb-1 relative z-10">Total de Vendas</h3>
               <p className="text-2xl font-bold text-primaryGreen relative z-10">{fmt(resumo.total_vendas)}</p>
             </div>
             <div className="bg-darkCard border border-primaryGreen/50 shadow-[0_0_15px_rgba(16,185,129,0.1)] rounded-2xl p-6 relative overflow-hidden">
@@ -181,6 +181,31 @@ export default function CaixaDashboard() {
               <h3 className="text-slate-400 font-medium mb-1">Aberto desde</h3>
               <p className="font-bold text-white text-sm">{new Date(turno.data_abertura).toLocaleString('pt-BR')}</p>
             </div>
+          </div>
+
+          <div className="bg-darkCard border border-darkBorder rounded-2xl p-6 mb-8">
+            <h2 className="text-lg font-bold mb-4">Detalhamento de Vendas</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-slate-900/50 p-4 rounded-xl border border-darkBorder text-center">
+                <p className="text-sm text-slate-400 mb-1">Dinheiro</p>
+                <p className="text-xl font-bold text-emerald-400">{fmt(resumo.vendas_detalhadas?.dinheiro || 0)}</p>
+              </div>
+              <div className="bg-slate-900/50 p-4 rounded-xl border border-darkBorder text-center">
+                <p className="text-sm text-slate-400 mb-1">Cartões</p>
+                <p className="text-xl font-bold text-blue-400">{fmt((resumo.vendas_detalhadas?.credito || 0) + (resumo.vendas_detalhadas?.debito || 0))}</p>
+              </div>
+              <div className="bg-slate-900/50 p-4 rounded-xl border border-darkBorder text-center">
+                <p className="text-sm text-slate-400 mb-1">Pix</p>
+                <p className="text-xl font-bold text-purple-400">{fmt(resumo.vendas_detalhadas?.pix || 0)}</p>
+              </div>
+              <div className="bg-slate-900/50 p-4 rounded-xl border border-darkBorder text-center">
+                <p className="text-sm text-slate-400 mb-1">Fiado</p>
+                <p className="text-xl font-bold text-amber-400">{fmt(resumo.vendas_detalhadas?.fiado || 0)}</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-500 mt-4 text-center italic">
+              * Apenas vendas em dinheiro afetam o saldo físico na gaveta.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

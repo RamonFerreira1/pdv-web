@@ -192,9 +192,16 @@ export default function HistoricoVendas() {
                       </div>
                       <div>
                         <h3 className="text-white font-semibold">Venda #{venda.ID}</h3>
-                        <div className="flex items-center gap-1 text-slate-400 text-xs mt-0.5">
-                          <Clock size={12} />
-                          <span>{fullDate} às {time}</span>
+                        <div className="flex items-center gap-2 text-slate-400 text-xs mt-0.5">
+                          <span className="flex items-center gap-1">
+                            <Clock size={12} />
+                            {fullDate} às {time}
+                          </span>
+                          {venda.metodo_pagamento && (
+                            <span className="bg-darkBorder/50 px-1.5 py-0.5 rounded text-slate-300 uppercase text-[10px] font-bold">
+                              {venda.metodo_pagamento}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

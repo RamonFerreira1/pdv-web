@@ -33,10 +33,17 @@ router.post('/:id/abater', authenticateToken, async (req, res) => {
     // Atualizar valor
     await db.query('UPDATE fiado SET valor_devido = ? WHERE id = ?', [novoValor, req.params.id]);
     
-    // Opcional: Registrar no caixa
+    // Tentar encontrar turno aberto para vincular
+    const [turnos] = await db.query(
+      "SELECT id FROM turnos_caixa WHERE usuario_id = ? AND status = 'Aberto'",
+      [req.usuario.id]
+    );
+    const turno_id = turnos.length > 0 ? turnos[0].id : null;
+
+    // Registrar no caixa
     await db.query(
-      'INSERT INTO caixa (tipo, descricao, valor) VALUES (?, ?, ?)',
-      ['Entrada', `Pagamento Fiado #${req.params.id}`, valor]
+      'INSERT INTO caixa (tipo, descricao, valor, usuario_id, turno_id) VALUES (?, ?, ?, ?, ?)',
+      ['Entrada', `Pagamento Fiado #${req.params.id}`, valor, req.usuario.id, turno_id]
     );
 
     res.json({ success: true, novoValor });
