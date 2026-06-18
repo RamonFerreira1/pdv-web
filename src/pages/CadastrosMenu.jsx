@@ -1,3 +1,4 @@
+// Autor: ISSAMO - FE Pessoa 3 (Estoque e Cadastros)
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tags, PackageSearch, Layers, Sliders, Users, Truck, UserCircle, ChevronRight, ArrowLeft } from 'lucide-react';
@@ -124,3 +125,4 @@ export default function CadastrosMenu() {
     </div>
   );
 }
+

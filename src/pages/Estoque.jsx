@@ -1,3 +1,4 @@
+// Autor: ISSAMO - FE Pessoa 3 (Estoque e Cadastros)
 import React, { useContext, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, ArrowLeft } from 'lucide-react';
@@ -222,3 +223,4 @@ export default function Estoque() {
     </div>
   );
 }
+

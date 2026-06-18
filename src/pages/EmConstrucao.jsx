@@ -1,3 +1,4 @@
+// Autor: ISSAMO - FE Pessoa 3 (Estoque e Cadastros)
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Construction, ArrowLeft } from 'lucide-react';
@@ -32,3 +33,4 @@ export default function EmConstrucao() {
     </div>
   );
 }
+

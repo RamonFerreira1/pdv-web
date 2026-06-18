@@ -1,3 +1,4 @@
+// Autor: ISSAMO - FE Pessoa 3 (Estoque e Cadastros)
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { useToast } from '../../context/AvisoContext';
@@ -193,3 +194,4 @@ export default function ModalProduto({ isOpen, onClose, onSave, productToEdit })
     </div>
   );
 }
+

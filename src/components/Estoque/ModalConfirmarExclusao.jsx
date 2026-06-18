@@ -1,3 +1,4 @@
+// Autor: ISSAMO - FE Pessoa 3 (Estoque e Cadastros)
 import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 
@@ -34,3 +35,4 @@ export default function ModalConfirmarExclusao({ isOpen, onClose, onConfirm, pro
     </div>
   );
 }
+
